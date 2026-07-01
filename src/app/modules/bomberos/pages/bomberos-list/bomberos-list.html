@@ -1,0 +1,85 @@
+<div class="bomberos-container">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2">
+      <i class="bi bi-person-badge"></i>
+      Bomberos
+      <span class="badge bg-secondary ms-2">{{ bomberos().length }}</span>
+    </h1>
+    <button class="btn btn-primary" routerLink="/bomberos/nuevo">
+      <i class="bi bi-plus-circle"></i>
+      Nuevo Bombero
+    </button>
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-2">Cargando bomberos...</p>
+    </div>
+  }
+
+  <!-- Sin datos -->
+  @if (!loading() && bomberos().length === 0) {
+    <div class="text-center py-5">
+      <i class="bi bi-inbox display-1 text-muted"></i>
+      <p class="text-muted mt-3">No hay bomberos registrados</p>
+      <button class="btn btn-primary" routerLink="/bomberos/nuevo">
+        Registrar primer bombero
+      </button>
+    </div>
+  }
+
+  <!-- Tabla -->
+  @if (!loading() && bomberos().length > 0) {
+    <div class="card">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Grado</th>
+                <th>Teléfono</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (bombero of bomberos(); track bombero.id) {
+                <tr>
+                  <td><strong>{{ bombero.codigo }}</strong></td>
+                  <td>{{ bombero.nombre }}</td>
+                  <td>{{ bombero.grado }}</td>
+                  <td>{{ bombero.telefono || 'N/A' }}</td>
+                  <td>
+                    <span class="badge" [class]="getEstadoBadgeClass(bombero.activo)">
+                      {{ getEstadoTexto(bombero.activo) }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <button class="btn btn-outline-info" (click)="verDetalle(bombero.id!)" title="Ver detalle">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <button class="btn btn-outline-primary" (click)="editar(bombero.id!)" title="Editar">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button class="btn btn-outline-danger" (click)="eliminar(bombero.id!, bombero.nombre)" title="Eliminar">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,174 @@
+<div class="asignacion-detail-container">
+  <div class="mb-3">
+    <button class="btn btn-outline-secondary" (click)="volver()">
+      <i class="bi bi-arrow-left"></i>
+      Volver
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  }
+
+  @if (!loading() && asignacion()) {
+    <div class="card">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h4 class="card-title mb-0">
+          <i class="bi bi-arrow-left-right"></i>
+          Asignación #{{ asignacion()?.id }}
+        </h4>
+        <div>
+          <button class="btn btn-primary me-2" (click)="editar()">
+            <i class="bi bi-pencil"></i>
+            Editar
+          </button>
+          @if (!asignacion()?.fechaHoraDevolucion) {
+            <button class="btn btn-success me-2" (click)="devolver()">
+              <i class="bi bi-arrow-return-left"></i>
+              Devolver
+            </button>
+          }
+          @if (isAdmin()) {
+            <button class="btn btn-danger" (click)="eliminar()">
+              <i class="bi bi-trash"></i>
+              Eliminar
+            </button>
+          }
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <h6 class="text-muted">Equipo</h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Código:</th>
+                <td><strong>{{ asignacion()?.equipoCodigoInterno }}</strong></td>
+              </tr>
+              <tr>
+                <th>Nombre:</th>
+                <td>{{ asignacion()?.equipoNombre }}</td>
+              </tr>
+              <tr>
+                <th>Serie:</th>
+                <td>{{ asignacion()?.equipoNumeroSerie }}</td>
+              </tr>
+              <tr>
+                <th>Tipo:</th>
+                <td>{{ asignacion()?.tipoEquipoNombre }}</td>
+              </tr>
+              <tr>
+                <th>Marca:</th>
+                <td>{{ asignacion()?.equipoMarca }}</td>
+              </tr>
+            </table>
+          </div>
+          <div class="col-md-6">
+            <h6 class="text-muted">Bombero</h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Código:</th>
+                <td><strong>{{ asignacion()?.bomberoCodigo }}</strong></td>
+              </tr>
+              <tr>
+                <th>Nombre:</th>
+                <td>{{ asignacion()?.bomberoNombre }}</td>
+              </tr>
+              <tr>
+                <th>Grado:</th>
+                <td>{{ asignacion()?.bomberoGrado }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="row">
+          <div class="col-md-6">
+            <h6 class="text-muted">Detalles de Entrega</h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Talla:</th>
+                <td>{{ asignacion()?.tallaEquipo || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Características:</th>
+                <td>{{ asignacion()?.caracteristicasEspecificas || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Estado Físico:</th>
+                <td>{{ asignacion()?.estadoFisicoEntrega }}</td>
+              </tr>
+              <tr>
+                <th>Tipo Movimiento:</th>
+                <td>{{ asignacion()?.tipoMovimiento }}</td>
+              </tr>
+            </table>
+          </div>
+          <div class="col-md-6">
+            <h6 class="text-muted">Fechas</h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Entrega:</th>
+                <td>{{ asignacion()?.fechaHoraEntrega | date:'dd/MM/yyyy HH:mm' }}</td>
+              </tr>
+              <tr>
+                <th>Devolución:</th>
+                <td>
+                  @if (asignacion()?.fechaHoraDevolucion) {
+                    {{ asignacion()?.fechaHoraDevolucion | date:'dd/MM/yyyy HH:mm' }}
+                  } @else {
+                    <span class="text-warning">Pendiente</span>
+                  }
+                </td>
+              </tr>
+              <tr>
+                <th>Estado:</th>
+                <td>
+                  <span class="badge" [class]="getEstadoBadgeClass(asignacion()!)">
+                    {{ getEstadoTexto(asignacion()!) }}
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="row">
+          <div class="col-12">
+            <h6 class="text-muted">Responsable</h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="15%">Nombre:</th>
+                <td><strong>{{ asignacion()?.responsableNombre }}</strong></td>
+              </tr>
+              <tr>
+                <th>Código:</th>
+                <td>{{ asignacion()?.responsableCodigo }}</td>
+              </tr>
+              <tr>
+                <th>Grado:</th>
+                <td>{{ asignacion()?.responsableGrado || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Cargo:</th>
+                <td>{{ asignacion()?.responsableCargo || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Teléfono:</th>
+                <td>{{ asignacion()?.responsableTelefono || 'N/A' }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

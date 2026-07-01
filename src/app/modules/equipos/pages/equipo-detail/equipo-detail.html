@@ -1,0 +1,81 @@
+<div class="equipo-detail-container">
+  <div class="mb-3">
+    <button class="btn btn-outline-secondary" (click)="volver()">
+      <i class="bi bi-arrow-left"></i>
+      Volver
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && equipo" class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <h4 class="card-title mb-0">
+        <i class="bi bi-tools"></i>
+        {{ equipo.nombre }}
+      </h4>
+      <div>
+        <button class="btn btn-primary me-2" (click)="editar()">
+          <i class="bi bi-pencil"></i>
+          Editar
+        </button>
+        <button class="btn btn-danger" (click)="eliminar()">
+          <i class="bi bi-trash"></i>
+          Eliminar
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <table class="table table-borderless">
+            <tr>
+              <th width="40%">Código Interno:</th>
+              <td><strong>{{ equipo.codigoInterno }}</strong></td>
+            </tr>
+            <tr>
+              <th>Número de Serie:</th>
+              <td>{{ equipo.numeroSerie || 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>Nombre:</th>
+              <td>{{ equipo.nombre }}</td>
+            </tr>
+            <tr>
+              <th>Área:</th>
+              <td>{{ equipo.area || 'N/A' }}</td>
+            </tr>
+          </table>
+        </div>
+        <div class="col-md-6">
+          <table class="table table-borderless">
+            <tr>
+              <th width="40%">Marca:</th>
+              <td>{{ equipo.marca || 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>Modelo:</th>
+              <td>{{ equipo.modelo || 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>Tipo:</th>
+              <td>{{ equipo.tipoEquipoNombre || 'N/A' }}</td>
+            </tr>
+            <tr>
+              <th>Estado:</th>
+              <td>
+                <span class="badge" [class]="getEstadoBadgeClass(equipo.estadoEquipoNombre || '')">
+                  {{ equipo.estadoEquipoNombre || 'Sin estado' }}
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

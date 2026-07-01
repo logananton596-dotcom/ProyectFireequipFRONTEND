@@ -1,0 +1,82 @@
+<div class="bombero-form-container">
+  <div class="card">
+    <div class="card-header bg-white">
+      <h4 class="card-title mb-0">
+        <i class="bi" [class.bi-plus-circle]="!isEditMode()" [class.bi-pencil-square]="isEditMode()"></i>
+        {{ isEditMode() ? 'Editar Bombero' : 'Nuevo Bombero' }}
+      </h4>
+    </div>
+    <div class="card-body">
+      @if (loading()) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+        </div>
+      }
+
+      <form [formGroup]="bomberoForm" (ngSubmit)="onSubmit()">
+        <div class="row g-3">
+          <!-- Código -->
+          <div class="col-md-6">
+            <label class="form-label">Código *</label>
+            <input type="text" class="form-control" formControlName="codigo"
+                   [class.is-invalid]="bomberoForm.get('codigo')?.invalid && bomberoForm.get('codigo')?.touched">
+            <div class="invalid-feedback" *ngIf="bomberoForm.get('codigo')?.invalid && bomberoForm.get('codigo')?.touched">
+              El código es requerido
+            </div>
+          </div>
+
+          <!-- Nombre -->
+          <div class="col-md-6">
+            <label class="form-label">Nombre *</label>
+            <input type="text" class="form-control" formControlName="nombre"
+                   [class.is-invalid]="bomberoForm.get('nombre')?.invalid && bomberoForm.get('nombre')?.touched">
+            <div class="invalid-feedback" *ngIf="bomberoForm.get('nombre')?.invalid && bomberoForm.get('nombre')?.touched">
+              El nombre es requerido
+            </div>
+          </div>
+
+          <!-- Grado -->
+          <div class="col-md-6">
+            <label class="form-label">Grado *</label>
+            <input type="text" class="form-control" formControlName="grado"
+                   [class.is-invalid]="bomberoForm.get('grado')?.invalid && bomberoForm.get('grado')?.touched">
+            <div class="invalid-feedback" *ngIf="bomberoForm.get('grado')?.invalid && bomberoForm.get('grado')?.touched">
+              El grado es requerido
+            </div>
+          </div>
+
+          <!-- Teléfono -->
+          <div class="col-md-6">
+            <label class="form-label">Teléfono</label>
+            <input type="text" class="form-control" formControlName="telefono">
+          </div>
+
+          <!-- Activo -->
+          <div class="col-md-12">
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input" formControlName="activo" id="activo">
+              <label class="form-check-label" for="activo">Activo</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="mt-4 d-flex gap-2">
+          <button type="submit" class="btn btn-primary" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            <i class="bi" [class.bi-save]="!submitting()"></i>
+            {{ isEditMode() ? 'Actualizar' : 'Guardar' }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="cancelar()">
+            <i class="bi bi-x-circle"></i>
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

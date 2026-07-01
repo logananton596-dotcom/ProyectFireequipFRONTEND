@@ -1,0 +1,157 @@
+<div class="equipo-form-container">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+      <h4 class="card-title mb-0 fw-bold text-dark">
+        <i class="bi me-2" [class.bi-plus-circle-fill]="!isEditMode" [class.bi-pencil-square]="isEditMode"></i>
+        {{ isEditMode ? 'Editar Equipo de Bomberos' : 'Registrar Nuevo Equipo' }}
+      </h4>
+    </div>
+    
+    <div class="card-body p-4">
+      
+      <!-- Estado: Cargando (Sintaxis Moderna @if) -->
+      @if (loading) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="text-muted mt-2 small">Sincronizando con el servidor de seguridad...</p>
+        </div>
+      } @else {
+
+        <!-- Formulario Reactivo de Angular 21 -->
+        <form [formGroup]="equipoForm" (ngSubmit)="onSubmit()">
+          <div class="row g-3">
+            
+            <!-- Código Interno -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Código Interno *</label>
+              <input type="text" class="form-control" formControlName="codigoInterno"
+                     [class.is-invalid]="equipoForm.get('codigoInterno')?.invalid && equipoForm.get('codigoInterno')?.touched"
+                     placeholder="Ej: EQ-2026-01">
+              @if (equipoForm.get('codigoInterno')?.invalid && equipoForm.get('codigoInterno')?.touched) {
+                <div class="invalid-feedback">El código interno es requerido institucionalmente.</div>
+              }
+            </div>
+
+            <!-- Número de Serie -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Número de Serie *</label>
+              <input type="text" class="form-control" formControlName="numeroSerie"
+                     [class.is-invalid]="equipoForm.get('numeroSerie')?.invalid && equipoForm.get('numeroSerie')?.touched"
+                     placeholder="Ingrese número de fábrica">
+              @if (equipoForm.get('numeroSerie')?.invalid && equipoForm.get('numeroSerie')?.touched) {
+                <div class="invalid-feedback">El número de serie de fábrica es requerido.</div>
+              }
+            </div>
+
+            <!-- Nombre -->
+            <div class="col-md-12">
+              <label class="form-label fw-semibold">Nombre del Equipo *</label>
+              <input type="text" class="form-control" formControlName="nombre"
+                     [class.is-invalid]="equipoForm.get('nombre')?.invalid && equipoForm.get('nombre')?.touched"
+                     placeholder="Ej: Manguera de lona de 2.5 pulgadas, Extractor de humo, etc.">
+              @if (equipoForm.get('nombre')?.invalid && equipoForm.get('nombre')?.touched) {
+                <div class="invalid-feedback">El nombre identificador es requerido.</div>
+              }
+            </div>
+
+            <!-- Área ID (Vinculado a tu modelo areaId) -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Estación / Área ID *</label>
+              <input type="number" class="form-control" formControlName="areaId"
+                     [class.is-invalid]="equipoForm.get('areaId')?.invalid && equipoForm.get('areaId')?.touched"
+                     placeholder="Ej: 1 (Compañía Salvadora)">
+              @if (equipoForm.get('areaId')?.invalid && equipoForm.get('areaId')?.touched) {
+                <div class="invalid-feedback">El ID numérico del área es requerido.</div>
+              }
+            </div>
+
+            <!-- Campo Plano de Texto de Área (Mapeado a tu atributo 'area') -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Nombre de Referencia del Área *</label>
+              <input type="text" class="form-control" formControlName="area"
+                     [class.is-invalid]="equipoForm.get('area')?.invalid && equipoForm.get('area')?.touched"
+                     placeholder="Ej: Almacén Central / Compañía 1">
+              @if (equipoForm.get('area')?.invalid && equipoForm.get('area')?.touched) {
+                <div class="invalid-feedback">El nombre de referencia del área es requerido.</div>
+              }
+            </div>
+
+            <!-- NUEVO DESPLEGABLE: Marcas especializadas de bomberos -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Marca</label>
+              <select class="form-select" formControlName="marca">
+                <option [value]="''">Seleccione marca...</option>
+                @for (m of marcasSugeridas; track m) {
+                  <option [value]="m">{{ m }}</option>
+                }
+                <option [value]="'OTRO'">Otra marca (Especificar en nombre)</option>
+              </select>
+            </div>
+
+            <!-- 💡 NUEVO DESPLEGABLE: Categorías de Modelos de Operación -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Modelo / Tipo Operativo</label>
+              <select class="form-select" formControlName="modelo">
+                <option [value]="''">Seleccione modelo...</option>
+                @for (mod of modelosSugeridas; track mod) {
+                  <option [value]="mod">{{ mod }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Tipo de Equipo (Dropdown Dinámico desde tu API) -->
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Categoría del Equipo *</label>
+              <select class="form-select" formControlName="tipoEquipoId"
+                      [class.is-invalid]="equipoForm.get('tipoEquipoId')?.invalid && equipoForm.get('tipoEquipoId')?.touched">
+                <option [value]="null">Seleccione categoría...</option>
+                @for (tipo of tipos; track tipo.id) {
+                  <option [value]="tipo.id">{{ tipo.nombre }}</option>
+                }
+              </select>
+              @if (equipoForm.get('tipoEquipoId')?.invalid && equipoForm.get('tipoEquipoId')?.touched) {
+                <div class="invalid-feedback">Debe clasificar el tipo de material.</div>
+              }
+            </div>
+
+            <!-- Fecha Compra -->
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Fecha de Compra</label>
+              <input type="date" class="form-control" formControlName="fechaCompra">
+            </div>
+
+            <!-- Vida Útil -->
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Vida Útil Estimada (Años)</label>
+              <input type="number" class="form-control" formControlName="vidaUtilAnios" placeholder="Ej: 5">
+            </div>
+
+            <!-- Ubicación -->
+            <div class="col-md-12">
+              <label class="form-label fw-semibold">Ubicación Física Actual</label>
+              <input type="text" class="form-control" formControlName="ubicacionActual" placeholder="Ej: Casillero 12 - Unidad de Rescate Móvil">
+            </div>
+          </div>
+
+          <!-- Botones de Acción Internos -->
+          <div class="mt-4 d-flex gap-2 justify-content-end border-top pt-3">
+            <button type="button" class="btn btn-light border" (click)="cancelar()">
+              <i class="bi bi-x-circle me-1"></i> Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary px-4 shadow-sm" [disabled]="submitting">
+              @if (submitting) {
+                <span class="spinner-border spinner-border-sm me-2"></span>
+              } @else {
+                <i class="bi bi-save-fill me-1"></i>
+              }
+              {{ isEditMode ? 'Actualizar Cambios' : 'Registrar Equipo' }}
+            </button>
+          </div>
+        </form>
+
+      }
+    </div>
+  </div>
+</div>

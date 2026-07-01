@@ -1,0 +1,166 @@
+<div class="asignacion-form-container">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+      <h4 class="card-title mb-0 fw-bold text-dark">
+        <i class="bi me-2" [class.bi-plus-circle-fill]="!isEditMode()" [class.bi-pencil-square]="isEditMode()"></i>
+        {{ isEditMode() ? 'Editar Asignación de Cargo' : 'Registrar Nueva Asignación' }}
+      </h4>
+    </div>
+    
+    <div class="card-body p-4">
+      <!-- Estado: Cargando Catálogos desde Servidor (Sintaxis Angular 21) -->
+      @if (loading()) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="text-muted mt-2 small">Sincronizando catálogos y almacenes operativos...</p>
+        </div>
+      } @else {
+
+        <!-- 💡 El formulario solo se dibuja cuando loading() es false y las listas están listas -->
+        <form [formGroup]="asignacionForm" (ngSubmit)="onSubmit()">
+          <div class="row g-3">
+            
+            <!-- Selector de Equipo Operativo -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Equipo / Material *</label>
+              <select class="form-select" formControlName="equipoId"
+                      [class.is-invalid]="asignacionForm.get('equipoId')?.invalid && asignacionForm.get('equipoId')?.touched">
+                <option [value]="null">Seleccione un equipo de la estación...</option>
+                @for (equipo of equipos(); track equipo.id) {
+                  <option [value]="equipo.id">
+                    {{ equipo.codigoInterno }} - {{ equipo.nombre }}
+                  </option>
+                }
+              </select>
+              @if (asignacionForm.get('equipoId')?.invalid && asignacionForm.get('equipoId')?.touched) {
+                <div class="invalid-feedback">Debe seleccionar un equipo registrado en el inventario.</div>
+              }
+            </div>
+
+            <!-- Selector de Bombero Efectivo -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Efectivo de Bomberos *</label>
+              <select class="form-select" formControlName="bomberoId"
+                      [class.is-invalid]="asignacionForm.get('bomberoId')?.invalid && asignacionForm.get('bomberoId')?.touched">
+                <option [value]="null">Seleccione el bombero asignado...</option>
+                @for (bombero of bomberos(); track bombero.id) {
+                  <option [value]="bombero.id">
+                    CIP: {{ bombero.codigo }} - {{ bombero.nombre }}
+                  </option>
+                }
+              </select>
+              @if (asignacionForm.get('bomberoId')?.invalid && asignacionForm.get('bomberoId')?.touched) {
+                <div class="invalid-feedback">Debe seleccionar un efectivo válido de la compañía.</div>
+              }
+            </div>
+
+            <!-- Talla del material -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Talla del Equipo</label>
+              <input type="text" class="form-control" formControlName="tallaEquipo" placeholder="Ej: M, L, XL, Talla 42, N/A">
+            </div>
+
+            <!-- Características específicas de entrega -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Características Específicas / Observaciones</label>
+              <input type="text" class="form-control" formControlName="caracteristicasEspecificas" placeholder="Ej: Color rojo con cintas reflectivas extra">
+            </div>
+
+            <!-- Fechas operativas -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Fecha Puesta en Operatividad</label>
+              <input type="date" class="form-control" formControlName="fechaPuestaOperatividad">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Fecha de Caducidad / Inspección Retiro</label>
+              <input type="date" class="form-control" formControlName="fechaCaducidad">
+            </div>
+
+            <!-- 💡 OPTIMIZADO: Selector de Estado Físico Predefinido -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Estado Físico de Entrega *</label>
+              <select class="form-select" formControlName="estadoFisicoEntrega"
+                      [class.is-invalid]="asignacionForm.get('estadoFisicoEntrega')?.invalid && asignacionForm.get('estadoFisicoEntrega')?.touched">
+                <option value="">Seleccione el estado actual del material...</option>
+                @for (ef of estadosFisicosSugeridos; track ef) {
+                  <option [value]="ef">{{ ef }}</option>
+                }
+              </select>
+              @if (asignacionForm.get('estadoFisicoEntrega')?.invalid && asignacionForm.get('estadoFisicoEntrega')?.touched) {
+                <div class="invalid-feedback">El reporte del estado físico es obligatorio para control.</div>
+              }
+            </div>
+
+            <!-- 💡 OPTIMIZADO: Selector de Tipo de Movimiento Operativo -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Tipo de Movimiento *</label>
+              <select class="form-select" formControlName="tipoMovimiento"
+                      [class.is-invalid]="asignacionForm.get('tipoMovimiento')?.invalid && asignacionForm.get('tipoMovimiento')?.touched">
+                <option value="">Seleccione la modalidad de salida...</option>
+                @for (tm of tiposMovimientoSugeridos; track tm) {
+                  <option [value]="tm">{{ tm }}</option>
+                }
+              </select>
+              @if (asignacionForm.get('tipoMovimiento')?.invalid && asignacionForm.get('tipoMovimiento')?.touched) {
+                <div class="invalid-feedback">El tipo de movimiento institucional es requerido.</div>
+              }
+            </div>
+
+            <!-- Datos del Oficial Responsable de la Entrega -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Nombre del Oficial Responsable *</label>
+              <input type="text" class="form-control" formControlName="responsableNombre"
+                     [class.is-invalid]="asignacionForm.get('responsableNombre')?.invalid && asignacionForm.get('responsableNombre')?.touched"
+                     placeholder="Nombre de quien autoriza la salida">
+              @if (asignacionForm.get('responsableNombre')?.invalid && asignacionForm.get('responsableNombre')?.touched) {
+                <div class="invalid-feedback">El nombre del responsable de almacén es requerido.</div>
+              }
+            </div>
+            
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Código / CIP del Responsable *</label>
+              <input type="text" class="form-control" formControlName="responsableCodigo"
+                     [class.is-invalid]="asignacionForm.get('responsableCodigo')?.invalid && asignacionForm.get('responsableCodigo')?.touched"
+                     placeholder="Código de identificación del oficial">
+              @if (asignacionForm.get('responsableCodigo')?.invalid && asignacionForm.get('responsableCodigo')?.touched) {
+                <div class="invalid-feedback">El código identificador es obligatorio.</div>
+              }
+            </div>
+
+            <!-- Datos Extra de Auditoría del Responsable -->
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Grado / Rango</label>
+              <input type="text" class="form-control" formControlName="responsableGrado" placeholder="Ej: Teniente, Capitán">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Cargo del Responsable</label>
+              <input type="text" class="form-control" formControlName="responsableCargo" placeholder="Ej: Jefe de Almacén, Comandante">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Teléfono del Responsable</label>
+              <input type="text" class="form-control" formControlName="responsableTelefono" placeholder="Número de contacto oficial">
+            </div>
+          </div>
+
+          <!-- Botones de Acción (Estilo elástico e integrado) -->
+          <div class="mt-4 d-flex gap-2 justify-content-end border-top pt-3">
+            <button type="button" class="btn btn-light border" (click)="cancelar()">
+              <i class="bi bi-x-circle me-1"></i> Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary px-4 shadow-sm" [disabled]="submitting()">
+              @if (submitting()) {
+                <span class="spinner-border spinner-border-sm me-2"></span>
+              } @else {
+                <i class="bi bi-save-fill me-1"></i>
+              }
+              {{ isEditMode() ? 'Actualizar Registro' : 'Confirmar Asignación' }}
+            </button>
+          </div>
+        </form>
+
+      }
+    </div>
+  </div>
+</div>

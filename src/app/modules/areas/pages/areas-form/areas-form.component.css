@@ -1,0 +1,18 @@
+.area-form-container {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.card {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.form-label {
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}

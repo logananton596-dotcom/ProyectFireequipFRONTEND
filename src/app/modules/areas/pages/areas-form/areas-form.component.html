@@ -1,0 +1,67 @@
+<div class="area-form-container">
+  <div class="card">
+    <div class="card-header bg-white">
+      <h4 class="card-title mb-0">
+        <i class="bi" [class.bi-plus-circle]="!isEditMode()" [class.bi-pencil-square]="isEditMode()"></i>
+        {{ isEditMode() ? 'Editar Área' : 'Nueva Área' }}
+      </h4>
+    </div>
+    <div class="card-body">
+      @if (loading()) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+        </div>
+      }
+
+      <form [formGroup]="areaForm" (ngSubmit)="onSubmit()">
+        <div class="row g-3">
+          <!-- Nombre -->
+          <div class="col-md-12">
+            <label class="form-label">Nombre del Área *</label>
+            <input type="text" class="form-control" formControlName="nombre"
+                   [class.is-invalid]="areaForm.get('nombre')?.invalid && areaForm.get('nombre')?.touched"
+                   placeholder="Ej: Estación Central">
+            <div class="invalid-feedback" *ngIf="areaForm.get('nombre')?.invalid && areaForm.get('nombre')?.touched">
+              El nombre del área es requerido
+            </div>
+          </div>
+
+          <!-- Encargado -->
+          <div class="col-md-12">
+            <label class="form-label">Encargado *</label>
+            <input type="text" class="form-control" formControlName="encargado"
+                   [class.is-invalid]="areaForm.get('encargado')?.invalid && areaForm.get('encargado')?.touched"
+                   placeholder="Nombre del responsable del área">
+            <div class="invalid-feedback" *ngIf="areaForm.get('encargado')?.invalid && areaForm.get('encargado')?.touched">
+              El encargado es requerido
+            </div>
+          </div>
+
+          <!-- Teléfono -->
+          <div class="col-md-12">
+            <label class="form-label">Teléfono</label>
+            <input type="text" class="form-control" formControlName="telefono"
+                   placeholder="Teléfono de contacto">
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="mt-4 d-flex gap-2">
+          <button type="submit" class="btn btn-primary" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            <i class="bi" [class.bi-save]="!submitting()"></i>
+            {{ isEditMode() ? 'Actualizar' : 'Guardar' }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="cancelar()">
+            <i class="bi bi-x-circle"></i>
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

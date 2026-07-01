@@ -1,0 +1,48 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3 shadow mb-0">
+  <div class="container-fluid p-0">
+    <!-- Botón para colapsar/expandir el menú lateral -->
+    <button class="btn btn-outline-light me-3" (click)="onToggleSidebar()">
+      <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Título de la aplicación -->
+    <span class="navbar-brand mb-0 h1 flex-grow-1">FireEquip Manager</span>
+
+    <!-- Sección de perfil del usuario logueado -->
+    <div class="d-flex align-items-center text-light">
+      
+      <!-- Usando el nuevo @if moderno de Angular 21 con lectura de Signal () -->
+      @if (currentUser()) {
+        <div class="dropdown">
+          <button class="btn btn-dark dropdown-toggle d-flex align-items-center gap-2" 
+                  type="button" 
+                  id="userDropdown" 
+                  data-bs-toggle="dropdown" 
+                  aria-expanded="false">
+            <i class="bi bi-person-circle fs-5"></i>
+            <!-- Llamamos a la Signal con paréntesis () -->
+            <span class="d-none d-md-inline">{{ currentUser()?.username }}</span>
+          </button>
+          
+          <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+            <li class="dropdown-header">
+              <!--  Mostramos el rol usando la Signal () -->
+              <small class="text-muted">Rol: {{ currentUser()?.rol?.nombre }}</small>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <button class="dropdown-item text-danger d-flex align-items-center gap-2" (click)="logout()">
+                <i class="bi bi-box-arrow-right"></i>
+                Cerrar Sesión
+              </button>
+            </li>
+          </ul>
+        </div>
+      } @else {
+        <!-- Texto de respaldo si no hay usuario cargado en la Signal -->
+        <span class="text-muted small">Cargando usuario...</span>
+      }
+
+    </div>
+  </div>
+</nav>

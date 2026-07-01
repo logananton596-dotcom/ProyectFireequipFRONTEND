@@ -1,0 +1,127 @@
+<div class="areas-container">
+  <!-- Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <h1 class="h2 mb-0">
+      <i class="bi bi-building text-primary me-2"></i>
+      Áreas / Estaciones
+      <!-- Sincronizado con la lista filtrada de la Signal computed -->
+      <span class="badge bg-secondary ms-2">{{ filteredAreas().length }}</span>
+    </h1>
+    @if (isAdmin()) {
+      <button class="btn btn-primary shadow-sm" routerLink="/areas/nuevo">
+        <i class="bi bi-plus-circle-fill me-1"></i>
+        Nueva Área
+      </button>
+    }
+  </div>
+
+  <!-- NUEVA SECCIÓN: Barra de búsqueda reactiva del módulo de áreas -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body bg-white rounded">
+      <div class="input-group">
+        <span class="input-group-text bg-light border-end-0 text-muted">
+          <i class="bi bi-search"></i>
+        </span>
+        <!-- Enlazamos el input bidireccionalmente a nuestra Signal de búsqueda usando $event -->
+        <input type="text" 
+               class="form-control bg-light border-start-0 ps-0" 
+               placeholder="Buscar por nombre de área, estación o nombre de encargado..."
+               [ngModel]="searchTerm()"
+               (ngModelChange)="searchTerm.set($event)">
+        
+        @if (searchTerm()) {
+          <button class="btn btn-outline-secondary border-start-0" type="button" (click)="searchTerm.set('')">
+            <i class="bi bi-x-circle-fill text-muted"></i>
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado: Cargando -->
+  @if (loading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-2">Cargando dependencias desde el servidor...</p>
+    </div>
+  } @else {
+    
+    <!-- Condicional inteligente para listas vacías -->
+    @if (filteredAreas().length === 0) {
+      @if (searchTerm()) {
+        <!-- Caso A: Escribió algo pero no coincide con ninguna estación o encargado -->
+        <div class="text-center py-5 bg-white rounded shadow-sm border">
+          <i class="bi bi-search display-1 text-muted"></i>
+          <p class="text-muted mt-3 fs-5">No se encontraron áreas que coincidan con "{{ searchTerm() }}"</p>
+          <button class="btn btn-sm btn-outline-secondary" (click)="searchTerm.set('')">Limpiar búsqueda</button>
+        </div>
+      } @else {
+        <!-- Caso B: La base de datos no tiene áreas creadas de forma nativa -->
+        <div class="text-center py-5 bg-white rounded shadow-sm border">
+          <i class="bi bi-inbox display-1 text-muted"></i>
+          <p class="text-muted mt-3 fs-5">No hay áreas operativas registradas en el sistema</p>
+          @if (isAdmin()) {
+            <button class="btn btn-primary mt-2" routerLink="/areas/nuevo">
+              <i class="bi bi-plus-circle me-1"></i> Crear primera área
+            </button>
+          }
+        </div>
+      }
+    } @else {
+      
+      <!-- Estado: Mostrar Tabla Adaptativa -->
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light text-uppercase fs-7 text-muted">
+                <tr>
+                  <th class="ps-4" width="10%">ID</th>
+                  <th>Nombre de Estación / Almacén</th>
+                  <th>Personal Encargado</th>
+                  <th>Teléfono de Contacto</th>
+                  <th class="text-end pe-4">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Bucle @for recorriendo nuestra lista filtrada reactiva en tiempo real -->
+                @for (area of filteredAreas(); track area.id) {
+                  <tr>
+                    <td class="ps-4 text-muted fw-bold">#{{ area.id }}</td>
+                    <td class="fw-semibold text-dark">{{ area.nombre }}</td>
+                    <td>
+                      <span class="badge bg-light text-dark border">
+                        <i class="bi bi-person me-1"></i>{{ area.encargado || 'No asignado' }}
+                      </span>
+                    </td>
+                    <td>{{ area.telefono || 'N/A' }}</td>
+                    <td class="text-end pe-4">
+                      <div class="btn-group btn-group-sm shadow-sm">
+                        <!-- 💡 Corrección de seguridad: Evaluamos la existencia del ID de forma condicional segura -->
+                        <button class="btn btn-outline-secondary" (click)="area.id && verDetalle(area.id)" title="Ver detalle" [disabled]="!area.id">
+                          <i class="bi bi-eye"></i>
+                        </button>
+                        
+                        @if (isAdmin()) {
+                          <button class="btn btn-outline-primary" (click)="area.id && editar(area.id)" title="Editar" [disabled]="!area.id">
+                            <i class="bi bi-pencil"></i>
+                          </button>
+                          <button class="btn btn-outline-danger" (click)="area.id && eliminar(area.id, area.nombre)" title="Eliminar" [disabled]="!area.id">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    }
+  }
+</div>

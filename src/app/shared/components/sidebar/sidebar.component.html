@@ -1,0 +1,18 @@
+<aside class="sidebar" [class.collapsed]="collapsed">
+  <nav class="sidebar-nav">
+    <ul class="nav flex-column">
+      @for (item of filteredMenuItems(); track item.path) {
+        <li class="nav-item">
+          <!-- Modificado: Añadimos routerLinkActiveOptions para mejorar la sincronización de subrutas y evitar congelamientos -->
+          <a class="nav-link" 
+             [routerLink]="item.path" 
+             [routerLinkActiveOptions]="{exact: false}"
+             routerLinkActive="active">
+            <i [class]="item.icon"></i>
+            <span class="nav-label">{{ item.label }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </nav>
+</aside>

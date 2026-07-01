@@ -1,0 +1,134 @@
+<div class="equipos-container">
+  <!-- Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <h1 class="h2 mb-0">
+      <i class="bi bi-tools text-primary me-2"></i>
+      Equipos
+      <span class="badge bg-secondary ms-2">{{ filteredEquipos().length }}</span>
+    </h1>
+    <button class="btn btn-primary shadow-sm" routerLink="/equipos/nuevo">
+      <i class="bi bi-plus-circle-fill me-1"></i>
+      Nuevo Equipo
+    </button>
+  </div>
+
+  <!-- Barra de búsqueda reactiva -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body bg-white rounded">
+      <div class="input-group">
+        <span class="input-group-text bg-light border-end-0 text-muted">
+          <i class="bi bi-search"></i>
+        </span>
+        <!-- 💡 Corregido: Usamos $event en lugar de $value -->
+        <input type="text" 
+               class="form-control bg-light border-start-0 ps-0" 
+               placeholder="Buscar por nombre, código interno, número de serie o marca..."
+               [ngModel]="searchTerm()"
+               (ngModelChange)="searchTerm.set($event)">
+        
+        @if (searchTerm()) {
+          <button class="btn btn-outline-secondary border-start-0" type="button" (click)="searchTerm.set('')">
+            <i class="bi bi-x-circle-fill text-muted"></i>
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado: Cargando -->
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-2">Cargando equipos desde el servidor...</p>
+    </div>
+  } @else {
+    
+    <!-- 💡 Condicional inteligente para pantallas vacías -->
+    @if (filteredEquipos().length === 0) {
+      @if (searchTerm()) {
+        <!-- Caso A: Escribió algo pero no coincide con nada -->
+        <div class="text-center py-5 bg-white rounded shadow-sm border">
+          <i class="bi bi-search display-1 text-muted"></i>
+          <p class="text-muted mt-3 fs-5">No se encontraron equipos que coincidan con "{{ searchTerm() }}"</p>
+          <button class="btn btn-sm btn-outline-secondary" (click)="searchTerm.set('')">Limpiar búsqueda</button>
+        </div>
+      } @else {
+        <!-- Caso B: La base de datos está totalmente vacía -->
+        <div class="text-center py-5 bg-white rounded shadow-sm border">
+          <i class="bi bi-inbox display-1 text-muted"></i>
+          <p class="text-muted mt-3 fs-5">No hay equipos registrados en el sistema</p>
+          <button class="btn btn-primary mt-2" routerLink="/equipos/nuevo">
+            <i class="bi bi-plus-circle me-1"></i> Registrar Primer Equipo
+          </button>
+        </div>
+      }
+    } @else {
+      
+      <!-- Estado: Mostrar Tabla Adaptativa -->
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light text-uppercase fs-7 text-muted">
+                <tr>
+                  <th class="ps-4">Código / Serie</th>
+                  <th>Nombre</th>
+                  <th>Marca / Modelo</th>
+                  <th>Área</th>
+                  <th>Tipo</th>
+                  <th>Estado</th>
+                  <th class="text-end pe-4">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (equipo of filteredEquipos(); track equipo.id) {
+                  <tr>
+                    <td class="ps-4">
+                      <strong>{{ equipo.codigoInterno || 'SIN CÓDIGO' }}</strong>
+                      <br>
+                      <small class="text-muted d-block">S/N: {{ equipo.numeroSerie || 'N/A' }}</small>
+                    </td>
+                    <td class="fw-semibold text-dark">{{ equipo.nombre }}</td>
+                    <td>
+                      {{ equipo.marca || 'N/A' }} 
+                      @if (equipo.modelo) {
+                        <small class="text-muted d-block text-secondary">Mod: {{ equipo.modelo }}</small>
+                      }
+                    </td>
+                    <td>
+                      <span class="badge bg-light text-secondary border">
+                        {{ equipo.areaNombre || equipo.area || 'General' }}
+                      </span>
+                    </td>
+                    <td>{{ equipo.tipoEquipoNombre || 'General' }}</td>
+                    <td>
+                      <span class="badge" [class]="getEstadoBadgeClass(equipo.estadoEquipoNombre || '')">
+                        {{ equipo.estadoEquipoNombre || 'Sin estado' }}
+                      </span>
+                    </td>
+                    <td class="text-end pe-4">
+                      <div class="btn-group btn-group-sm shadow-sm">
+                        <button class="btn btn-outline-secondary" (click)="equipo.id && verDetalle(equipo.id)" title="Ver detalle" [disabled]="!equipo.id">
+                          <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-outline-primary" (click)="equipo.id && editar(equipo.id)" title="Editar" [disabled]="!equipo.id">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-danger" (click)="equipo.id && eliminar(equipo.id, equipo.nombre)" title="Eliminar" [disabled]="!equipo.id">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    }
+  }
+</div>

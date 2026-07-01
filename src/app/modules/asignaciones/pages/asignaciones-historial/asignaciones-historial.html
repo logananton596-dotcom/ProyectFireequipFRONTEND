@@ -1,0 +1,130 @@
+<div class="historial-container">
+  <!-- Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <h1 class="h2 mb-0">
+      <i class="bi bi-clock-history text-primary me-2"></i>
+      Historial de Asignaciones
+      <!-- 💡 Sincronizado con la lista calculada de la Signal computed -->
+      <span class="badge bg-secondary ms-2">{{ filteredHistorial().length }}</span>
+    </h1>
+    <button class="btn btn-outline-secondary shadow-sm" routerLink="/asignaciones">
+      <i class="bi bi-arrow-left me-1"></i>
+      Volver a Asignaciones
+    </button>
+  </div>
+
+  <!-- 💡 NUEVA SECCIÓN: Barra de búsqueda reactiva para el archivo de historial -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body bg-white rounded">
+      <div class="input-group">
+        <span class="input-group-text bg-light border-end-0 text-muted">
+          <i class="bi bi-search"></i>
+        </span>
+        <!-- Enlazamos el input directamente a la Signal de búsqueda con $event -->
+        <input type="text" 
+               class="form-control bg-light border-start-0 ps-0" 
+               placeholder="Buscar en el registro por código, nombre de equipo o bombero..."
+               [ngModel]="searchTerm()"
+               (ngModelChange)="searchTerm.set($event)">
+        
+        @if (searchTerm()) {
+          <button class="btn btn-outline-secondary border-start-0" type="button" (click)="searchTerm.set('')">
+            <i class="bi bi-x-circle-fill text-muted"></i>
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado: Cargando -->
+  @if (loading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-2">Cargando archivo histórico de devoluciones...</p>
+    </div>
+  } @else {
+    
+    <!-- 💡 Condicional inteligente para historiales vacíos o búsquedas sin coincidencia -->
+    @if (filteredHistorial().length === 0) {
+      @if (searchTerm()) {
+        <!-- Caso A: Escribió un filtro que no arrojó resultados -->
+        <div class="text-center py-5 bg-white rounded shadow-sm border">
+          <i class="bi bi-search display-1 text-muted"></i>
+          <p class="text-muted mt-3 fs-5">No se encontraron devoluciones que coincidan con "{{ searchTerm() }}"</p>
+          <button class="btn btn-sm btn-outline-secondary" (click)="searchTerm.set('')">Limpiar filtro</button>
+        </div>
+      } @else {
+        <!-- Caso B: No hay ningún registro devuelto en el backend de Docker todavía -->
+        <div class="text-center py-5 bg-white rounded shadow-sm border">
+          <i class="bi bi-inbox display-1 text-muted"></i>
+          <p class="text-muted mt-3 fs-5">No existen registros de devoluciones completadas en el historial</p>
+        </div>
+      }
+    } @else {
+      
+      <!-- Estado: Mostrar Tabla Adaptativa y Elástica -->
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light text-uppercase fs-7 text-muted">
+                <tr>
+                  <th class="ps-4" width="8%">ID</th>
+                  <th>Equipo / Material</th>
+                  <th>Bombero Receptor</th>
+                  <th>Estado</th>
+                  <th>Fecha Entrega</th>
+                  <th>Fecha Devolución</th>
+                  <th class="text-end pe-4">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- 💡 Bucle @for recorriendo nuestra lista calculada en tiempo real -->
+                @for (asignacion of filteredHistorial(); track asignacion.id) {
+                  <tr>
+                    <td class="ps-4 text-muted fw-bold">#{{ asignacion.id }}</td>
+                    <td>
+                      <span class="fw-semibold text-dark">{{ asignacion.equipoNombre || 'Material Operativo' }}</span>
+                      <br>
+                      <small class="text-muted"><i class="bi bi-tag me-1"></i>{{ asignacion.equipoCodigoInterno }}</small>
+                    </td>
+                    <td>
+                      <span class="fw-semibold text-dark">{{ asignacion.bomberoNombre || 'Efectivo' }}</span>
+                      <br>
+                      <small class="text-muted"><i class="bi bi-shield me-1"></i>{{ asignacion.bomberoGrado || 'S/G' }}</small>
+                    </td>
+                    <td>
+                      <span class="badge" [class]="getEstadoBadgeClass(asignacion)">
+                        {{ getEstadoTexto(asignacion) }}
+                      </span>
+                    </td>
+                    <td>
+                      <i class="bi bi-calendar-check me-1 text-muted"></i>
+                      {{ asignacion.fechaHoraEntrega | date:'dd/MM/yyyy' }}
+                    </td>
+                    <td>
+                      <i class="bi bi-calendar-x me-1 text-success"></i>
+                      <strong>{{ asignacion.fechaHoraDevolucion | date:'dd/MM/yyyy' }}</strong>
+                    </td>
+                    <td class="text-end pe-4">
+                      <!-- 💡 Corrección de seguridad: Removido el operador ! por evaluación condicional segura -->
+                      <button class="btn btn-sm btn-outline-secondary shadow-sm" 
+                              (click)="asignacion.id && verDetalle(asignacion.id)" 
+                              title="Ver detalle completo" 
+                              [disabled]="!asignacion.id">
+                        <i class="bi bi-eye"></i> Detalle
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    }
+  }
+</div>
