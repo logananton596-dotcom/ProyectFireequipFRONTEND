@@ -38,8 +38,8 @@ services:
 
   # ====== AQUÍ SE UNE TU NUEVO FRONTEND ======
   frontend:
-    image: ${DOCKER_USERNAME}/fireequip-frontend:latest
-    container_name: fireequip_frontend
+    image: ${DOCKER_USERNAME}/fireequip-manager:latest
+    container_name: fireequip_manager
     depends_on:
       - backend
     ports:

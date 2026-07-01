@@ -16,10 +16,10 @@ WORKDIR /app
 
 # Copiar solo el resultado compilado por Angular 21 desde la etapa de build
 # NOTA: Reemplaza 'fireequip-frontend' por el nombre exacto de tu proyecto (míralo en tu angular.json)
-COPY --from=build /app/dist/fireequip-frontend /app/dist/fireequip-frontend
+COPY --from=build /app/dist/fireequip-manager /app/dist/fireequip-manager
 
 # Exponer el puerto por defecto que usa el servidor SSR de Angular (normalmente el 4000)
 EXPOSE 4000
 
 # Comando para iniciar el servidor SSR de tu aplicación
-CMD ["node", "dist/fireequip-frontend/server/server.mjs"]
+CMD ["node", "dist/fireequip-manager/server/server.mjs"]
