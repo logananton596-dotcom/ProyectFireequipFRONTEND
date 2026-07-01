@@ -2,7 +2,7 @@ name: Build and Push Frontend Docker Image
 
 on:
   push:
-    branches: [ "V2docker" ]
+    branches: [ "Front1CasiFull" ]
 
 jobs:
   build:
