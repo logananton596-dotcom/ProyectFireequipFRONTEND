@@ -1,19 +1,25 @@
-# ====== BUILD ======
-FROM node:20-alpine AS build
+# ====== STAGE 1: Build ======
+FROM node:20.20.2-alpine AS build
 WORKDIR /app
+
+# Copiar archivos de configuración de dependencias
 COPY package*.json ./
 RUN npm ci
+
+# Copiar el código fuente y compilar
 COPY . .
-# Compila los archivos estáticos de Angular
 RUN npm run build -- --configuration=production
 
-# ====== RUN ======
-FROM nginx:alpine
-# Copia el build de Angular a Nginx. Reemplaza 'fireequip-frontend' por el nombre de tu proyecto en angular.json
-COPY --from=build /app/dist/fireequip-frontend/browser /usr/share/nginx/html
+# ====== STAGE 2: Run ======
+FROM node:20.20.2-alpine
+WORKDIR /app
 
-# Copia una configuración personalizada para evitar errores de rutas (opcional pero muy recomendado)
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copiar solo el resultado compilado por Angular 21 desde la etapa de build
+# NOTA: Reemplaza 'fireequip-frontend' por el nombre exacto de tu proyecto (míralo en tu angular.json)
+COPY --from=build /app/dist/fireequip-frontend /app/dist/fireequip-frontend
 
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# Exponer el puerto por defecto que usa el servidor SSR de Angular (normalmente el 4000)
+EXPOSE 4000
+
+# Comando para iniciar el servidor SSR de tu aplicación
+CMD ["node", "dist/fireequip-frontend/server/server.mjs"]
