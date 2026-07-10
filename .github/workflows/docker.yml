@@ -19,7 +19,7 @@ jobs:
 
       - name: Install dependencies and Build
         run: |
-          npm ci
+          npm ci --legacy-peer-deps
           npm run build -- --configuration=production
 
       # Configura tus secretos (DOCKER_USERNAME y DOCKER_PASSWORD) en Settings de este nuevo repo 
