@@ -4,11 +4,10 @@ WORKDIR /app
 
 # Copiar archivos de configuración de dependencias
 COPY package*.json ./
-RUN npm ci
-
-# Copiar el código fuente y compilar --configuration=production
+RUN npm ci --legacy-peer-deps
+# Copiar el código fuente y compilar
 COPY . .
-RUN npm run build --legacy-peer-deps
+RUN npm run build -- --configuration=production
 
 # ====== STAGE 2: Run ======
 FROM node:20.20.2-alpine
