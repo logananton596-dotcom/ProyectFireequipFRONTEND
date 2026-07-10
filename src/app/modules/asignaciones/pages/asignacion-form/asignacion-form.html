@@ -47,7 +47,7 @@
                 <option [value]="null">Seleccione el bombero asignado...</option>
                 @for (bombero of bomberos(); track bombero.id) {
                   <option [value]="bombero.id">
-                    CIP: {{ bombero.codigo }} - {{ bombero.nombre }}
+                    CIP: {{ bombero.codigoCgbvp }} - {{ bombero.nombre }}
                   </option>
                 }
               </select>

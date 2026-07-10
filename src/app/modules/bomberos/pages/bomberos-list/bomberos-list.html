@@ -1,85 +1,213 @@
 <div class="bomberos-container">
+
   <!-- Header -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h2">
-      <i class="bi bi-person-badge"></i>
-      Bomberos
-      <span class="badge bg-secondary ms-2">{{ bomberos().length }}</span>
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <h1 class="h2 mb-0 fw-bold text-dark">
+      <i class="bi bi-person-badge text-primary me-2"></i> Personal de Bomberos
+      <span class="badge bg-secondary ms-2 fs-6">{{ filteredBomberos().length }}</span>
     </h1>
-    <button class="btn btn-primary" routerLink="/bomberos/nuevo">
-      <i class="bi bi-plus-circle"></i>
-      Nuevo Bombero
+    <button class="btn btn-primary shadow-sm" routerLink="/bomberos/nuevo">
+      <i class="bi bi-plus-circle-fill me-1"></i> Nuevo Bombero
     </button>
   </div>
 
-  <!-- Loading -->
-  @if (loading()) {
+  <!-- Barra de búsqueda reactiva -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body bg-white rounded">
+      <div class="input-group">
+        <span class="input-group-text bg-light border-end-0 text-muted">
+          <i class="bi bi-search"></i>
+        </span>
+        <input type="text" 
+               class="form-control bg-light border-start-0 ps-0" 
+               placeholder="Buscar por código, nombre, apellido, DNI, compañía, tipo de sangre..."
+               [ngModel]="searchTerm()"
+               (input)="onSearchChange($event)">
+        
+        @if (searchTerm()) {
+          <button class="btn btn-outline-secondary border-start-0" type="button" (click)="searchTerm.set(''); paginaActual.set(1)">
+            <i class="bi bi-x-circle-fill text-muted"></i>
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado: Cargando -->
+  @if (loading) {
     <div class="text-center py-5">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Cargando...</span>
       </div>
-      <p class="text-muted mt-2">Cargando bomberos...</p>
+      <p class="text-muted mt-2">Sincronizando registros de personal...</p>
     </div>
-  }
-
-  <!-- Sin datos -->
-  @if (!loading() && bomberos().length === 0) {
-    <div class="text-center py-5">
-      <i class="bi bi-inbox display-1 text-muted"></i>
-      <p class="text-muted mt-3">No hay bomberos registrados</p>
-      <button class="btn btn-primary" routerLink="/bomberos/nuevo">
-        Registrar primer bombero
-      </button>
-    </div>
-  }
-
-  <!-- Tabla -->
-  @if (!loading() && bomberos().length > 0) {
-    <div class="card">
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead class="table-light">
-              <tr>
-                <th>Código</th>
-                <th>Nombre</th>
-                <th>Grado</th>
-                <th>Teléfono</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (bombero of bomberos(); track bombero.id) {
-                <tr>
-                  <td><strong>{{ bombero.codigo }}</strong></td>
-                  <td>{{ bombero.nombre }}</td>
-                  <td>{{ bombero.grado }}</td>
-                  <td>{{ bombero.telefono || 'N/A' }}</td>
-                  <td>
-                    <span class="badge" [class]="getEstadoBadgeClass(bombero.activo)">
-                      {{ getEstadoTexto(bombero.activo) }}
-                    </span>
-                  </td>
-                  <td>
-                    <div class="btn-group btn-group-sm">
-                      <button class="btn btn-outline-info" (click)="verDetalle(bombero.id!)" title="Ver detalle">
-                        <i class="bi bi-eye"></i>
-                      </button>
-                      <button class="btn btn-outline-primary" (click)="editar(bombero.id!)" title="Editar">
-                        <i class="bi bi-pencil"></i>
-                      </button>
-                      <button class="btn btn-outline-danger" (click)="eliminar(bombero.id!, bombero.nombre)" title="Eliminar">
-                        <i class="bi bi-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+  } @else {
+    
+    <!-- Estados de control de datos vacíos -->
+    @if (filteredBomberos().length === 0) {
+      @if (searchTerm()) {
+        <div class="text-center py-5 bg-white rounded shadow-sm border">
+          <i class="bi bi-search display-1 text-muted"></i>
+          <p class="text-muted mt-3 fs-5">No se encontraron efectivos que coincidan con "{{ searchTerm() }}"</p>
+          <button class="btn btn-sm btn-outline-secondary" (click)="searchTerm.set(''); paginaActual.set(1)">Limpiar búsqueda</button>
         </div>
+      } @else {
+        <div class="text-center py-5 bg-white rounded shadow-sm border">
+          <i class="bi bi-inbox display-1 text-muted"></i>
+          <p class="text-muted mt-3 fs-5">No hay bomberos registrados en la estación</p>
+          <button class="btn btn-primary mt-2" routerLink="/bomberos/nuevo">
+            <i class="bi bi-plus-circle me-1"></i> Registrar Primer Efectivo
+          </button>
+        </div>
+      }
+    } @else {
+      
+      <!-- Tabla con Scroll y Paginación -->
+      <div class="card shadow-sm border-0">
+        
+        <!-- Selector superior de cantidad por página -->
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom-0">
+          <div class="d-flex align-items-center gap-2">
+            <span class="text-muted small">Mostrar</span>
+            <select class="form-select form-select-sm" style="width: auto;" 
+                    [ngModel]="tamanoPagina()" 
+                    (ngModelChange)="onTamanoPaginaChange($event)">
+              @for (opcion of opcionesTamano; track opcion) {
+                <option [value]="opcion">{{ opcion }} registros</option>
+              }
+            </select>
+          </div>
+          <span class="text-muted small">
+            Mostrando del {{ (paginaActual() - 1) * tamanoPagina() + 1 }} al 
+            {{ Math.min(paginaActual() * tamanoPagina(), filteredBomberos().length) }} de {{ filteredBomberos().length }}
+          </span>
+        </div>
+
+        <!-- Contenedor con Scroll -->
+        <div class="card-body p-0">
+          <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+            <table class="table table-lg table-hover align-middle mb-0 text-nowrap">
+              <thead class="table-light text-uppercase fs-6 text-muted sticky-top shadow-sm" style="z-index: 1;">
+                <tr>
+                  <th class="ps-4" style="min-width: 120px;">Código CGBVP</th>
+                  <th style="min-width: 160px;">Compañía</th>
+                  <th style="min-width: 250px;">Nombre Completo</th>
+                  <th style="min-width: 120px;">DNI</th>
+                  <th style="min-width: 130px;">Grado</th>
+                  <th style="min-width: 120px;">Situación</th>
+                  <th style="min-width: 80px;">Cargo</th>        
+                  <th style="min-width: 110px;">Tipo Cargo</th>  
+                  <th style="min-width: 90px;">T. Sangre</th>
+                  <th style="min-width: 70px;">Talla</th>    
+                  <th style="min-width: 70px;">Peso</th>     
+                  <th style="min-width: 120px;">Teléfono</th>
+                  <th style="min-width: 120px;">TeléfonoEmergencia</th>
+                  <th style="min-width: 120px;">Correo</th> 
+                  <th style="min-width: 80px;">Licencia</th>         
+                  <th style="min-width: 100px;">Tipo Licencia</th>    
+                  <th style="min-width: 120px;">Vehículo</th>        
+                  <th class="text-end pe-4">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (bombero of bomberosPaginados(); track bombero.id) {
+                  <tr>
+                    <td class="ps-4"><strong>{{ bombero.codigoCgbvp }}</strong></td>
+                    <td>{{ formatearCompania(bombero.compania) }}</td>
+                    <td class="fw-semibold text-dark">{{ getNombreCompleto(bombero) }}</td>
+                    <td>{{ bombero.dni }}</td>
+                    <td><span class="badge bg-light text-dark border px-2 py-1.5">{{ bombero.grado }}</span></td>                 
+                    <td>
+                      <span class="badge shadow-sm px-3 py-2 fw-bold" 
+                            [class]="getEstadoBadgeClass(bombero.estado)">
+                        {{ bombero.estado }}
+                      </span>
+                    </td>
+                    <td>
+                    <span class="badge" [class.bg-success]="bombero.tieneCargo" [class.bg-secondary]="!bombero.tieneCargo">
+                        {{ bombero.tieneCargo ? 'Sí' : 'No' }}
+                      </span>
+                    </td>
+                    <td>{{ bombero.tipoCargo ? bombero.tipoCargo.replace('_', ' ') : 'N/A' }}</td>
+                    <td><span class="badge bg-info text-white">{{ formatearTipoSangre(bombero.tipoSangre) }}</span></td>
+                    <td>{{ bombero.talla }} m</td> 
+                    <td>{{ bombero.peso }} kg</td> 
+                    <td>{{ bombero.telefono || 'N/A' }}</td>
+                    <td>{{ bombero.telefonoEmergencia || 'N/A' }}</td>
+                    <td>{{ bombero.correo || 'N/A' }}</td>
+                    <td>
+                      <span class="badge" [class.bg-success]="bombero.licencia" [class.bg-secondary]="!bombero.licencia">
+                        {{ bombero.licencia ? 'Sí' : 'No' }}
+                      </span>
+                    </td>
+                    <td>{{ formatearTipoLicencia(bombero.tipoLicencia) }}</td> 
+                    <td>{{ formatearTipoVehiculo(bombero.tipoVehiculoLicencia) }}</td> 
+                    
+                    <td class="text-end pe-4">
+                      <div class="btn-group btn-group-sm shadow-sm">
+                        <button class="btn btn-outline-secondary" (click)="bombero.id && verDetalle(bombero.id)" title="Ver Detalle" [disabled]="!bombero.id">
+                          <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-outline-primary" (click)="bombero.id && editar(bombero.id)" title="Editar" [disabled]="!bombero.id">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-danger" (click)="bombero.id && eliminar(bombero.id, getNombreCompleto(bombero))" title="Eliminar" [disabled]="!bombero.id">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Barra inferior de paginación -->
+        <div class="card-footer bg-white py-3 d-flex justify-content-center align-items-center border-top">
+          <nav aria-label="Navegación de personal">
+            <ul class="pagination pagination-sm mb-0 gap-1">
+              
+              <li class="page-item" [class.disabled]="paginaActual() === 1">
+                <button class="btn btn-sm btn-light border" (click)="cambiarPagina(1)" title="Primera Página" [disabled]="paginaActual() === 1">
+                  <i class="bi bi-chevron-double-left"></i> Primero
+                </button>
+              </li>
+
+              <li class="page-item" [class.disabled]="paginaActual() === 1">
+                <button class="btn btn-sm btn-light border" (click)="cambiarPagina(paginaActual() - 1)" [disabled]="paginaActual() === 1">
+                  <i class="bi bi-chevron-left"></i>
+                </button>
+              </li>
+
+              <li class="page-item disabled">
+                <span class="btn btn-sm btn-primary text-white fw-bold border px-3">
+                  Pág. {{ paginaActual() }} de {{ totalPaginas() }}
+                </span>
+              </li>
+
+              <li class="page-item" [class.disabled]="paginaActual() === totalPaginas()">
+                <button class="btn btn-sm btn-light border" (click)="cambiarPagina(paginaActual() + 1)" [disabled]="paginaActual() === totalPaginas()">
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+              </li>
+
+              <li class="page-item" [class.disabled]="paginaActual() === totalPaginas()">
+                <button class="btn btn-sm btn-light border" (click)="cambiarPagina(totalPaginas())" title="Última Página" [disabled]="paginaActual() === totalPaginas()">
+                  Último <i class="bi bi-chevron-double-right"></i>
+                </button>
+              </li>
+
+            </ul>
+          </nav>
+        </div>
+
       </div>
-    </div>
+    }
   }
+  
 </div>
+<app-modal-motivo 
+  (motivoConfirmado)="onMotivoConfirmado($event)"
+  (motivoCancelado)="onMotivoCancelado()">
+</app-modal-motivo>

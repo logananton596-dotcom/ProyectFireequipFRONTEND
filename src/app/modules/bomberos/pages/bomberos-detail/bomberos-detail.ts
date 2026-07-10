@@ -1,9 +1,9 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { BomberoService } from '../../../../core/services/bombero.service';
-import { Bombero } from '../../../../core/models/bombero.model';
+import { Bombero, EstadoBombero, formatearTipoSangre,formatearCompania,formatearTipoLicencia,formatearTipoVehiculo } from '../../../../core/models/bombero.model';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -14,16 +14,22 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./bomberos-detail.css']
 })
 export class BomberosDetail implements OnInit, OnDestroy {
+  // Inyección moderna
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private bomberoService = inject(BomberoService);
+  private toastr = inject(ToastrService);
+
+  // Signals
   bombero = signal<Bombero | null>(null);
   loading = signal(false);
   private subscriptions: Subscription = new Subscription();
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private bomberoService: BomberoService,
-    private toastr: ToastrService
-  ) {}
+
+  //helpers
+  formatearCompania = formatearCompania;
+  formatearTipoVehiculo = formatearTipoVehiculo;
+  formatearTipoLicencia = formatearTipoLicencia;
 
   ngOnInit(): void {
     this.loadBombero();
@@ -62,7 +68,8 @@ export class BomberosDetail implements OnInit, OnDestroy {
   eliminar(): void {
     const bombero = this.bombero();
     if (!bombero) return;
-    if (confirm(`¿Está seguro de eliminar al bombero "${bombero.nombre}"?`)) {
+    const nombreCompleto = this.getNombreCompleto(bombero);
+    if (confirm(`¿Está seguro de eliminar al bombero "${nombreCompleto}"?`)) {
       this.subscriptions.add(
         this.bomberoService.deleteById(bombero.id!).subscribe({
           next: () => {
@@ -81,13 +88,36 @@ export class BomberosDetail implements OnInit, OnDestroy {
     this.router.navigate(['/bomberos']);
   }
 
-  getEstadoBadgeClass(activo: boolean): string {
-    return activo ? 'bg-success' : 'bg-danger';
+  // Helper para nombre completo
+  getNombreCompleto(bombero: Bombero): string {
+    return `${bombero.apellido}, ${bombero.nombre}`;
+  }
+  // Helper para formatear tipo de cargo
+  formatearTipoCargo(tipo: string): string {
+  return tipo ? tipo.replace('_', ' ') : 'N/A';
   }
 
-  getEstadoTexto(activo: boolean): string {
-    return activo ? 'Activo' : 'Inactivo';
-  }
+formatFecha(date: Date | string | null | undefined): string { // <-- Agregado 'null' aquí
+  if (!date) return 'N/A';
+  
+  const d = new Date(date);
+  return d.toLocaleDateString('es-PE', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
+
+  // Badge para estado usando Enum
+  getEstadoBadgeClass(estado: EstadoBombero): string {
+    switch (estado) {
+      case 'ACTIVO': return 'bg-success text-white';
+      case 'RESERVA': return 'bg-warning text-dark';
+      case 'BAJA': return 'bg-danger text-white';
+      default: return 'bg-secondary text-white';
+    }
+  }  
+  formatearTipoSangre = formatearTipoSangre;
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();

@@ -1,1 +1,113 @@
-<p>mantenimiento-form works!</p>
+<div class="mantenimiento-form-container">
+  <div class="card">
+    <div class="card-header bg-white">
+      <h4 class="card-title mb-0">
+        <i class="bi" [class.bi-plus-circle]="!isEditMode()" [class.bi-pencil-square]="isEditMode()"></i>
+        {{ isEditMode() ? 'Editar Mantenimiento' : 'Registrar Mantenimiento' }}
+      </h4>
+    </div>
+    <div class="card-body">
+      @if (loading()) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+        </div>
+      }
+
+      <form [formGroup]="mantenimientoForm" (ngSubmit)="onSubmit()">
+        <div class="row g-3">
+          <!-- Equipo -->
+          <div class="col-md-6">
+            <label class="form-label">Equipo *</label>
+            <select class="form-select" formControlName="equipoId"
+                    [class.is-invalid]="mantenimientoForm.get('equipoId')?.invalid && mantenimientoForm.get('equipoId')?.touched">
+              <option [value]="null">Seleccione un equipo...</option>
+              @for (equipo of equipos(); track equipo.id) {
+                <option [value]="equipo.id">
+                  {{ equipo.codigoInterno }} - {{ equipo.nombre }}
+                </option>
+              }
+            </select>
+            <div class="invalid-feedback" *ngIf="mantenimientoForm.get('equipoId')?.invalid && mantenimientoForm.get('equipoId')?.touched">
+              El equipo es requerido
+            </div>
+          </div>
+
+          <!-- Tipo -->
+          <div class="col-md-6">
+            <label class="form-label">Tipo de Mantenimiento *</label>
+            <select class="form-select" formControlName="tipo"
+                    [class.is-invalid]="mantenimientoForm.get('tipo')?.invalid && mantenimientoForm.get('tipo')?.touched">
+              <option [value]="null">Seleccione un tipo...</option>
+              <option value="PREVENTIVO">Preventivo</option>
+              <option value="CORRECTIVO">Correctivo</option>
+            </select>
+            <div class="invalid-feedback" *ngIf="mantenimientoForm.get('tipo')?.invalid && mantenimientoForm.get('tipo')?.touched">
+              El tipo de mantenimiento es requerido
+            </div>
+          </div>
+
+          <!-- Fecha -->
+          <div class="col-md-6">
+            <label class="form-label">Fecha *</label>
+            <input type="date" class="form-control" formControlName="fecha"
+                   [class.is-invalid]="mantenimientoForm.get('fecha')?.invalid && mantenimientoForm.get('fecha')?.touched">
+            <div class="invalid-feedback" *ngIf="mantenimientoForm.get('fecha')?.invalid && mantenimientoForm.get('fecha')?.touched">
+              La fecha es requerida
+            </div>
+          </div>
+
+          <!-- Responsable -->
+          <div class="col-md-6">
+            <label class="form-label">Responsable *</label>
+            <input type="text" class="form-control" formControlName="responsable"
+                   [class.is-invalid]="mantenimientoForm.get('responsable')?.invalid && mantenimientoForm.get('responsable')?.touched"
+                   placeholder="Nombre del responsable del mantenimiento">
+            <div class="invalid-feedback" *ngIf="mantenimientoForm.get('responsable')?.invalid && mantenimientoForm.get('responsable')?.touched">
+              El responsable es requerido
+            </div>
+          </div>
+
+          <!-- Fecha Próximo Mantenimiento -->
+          <div class="col-md-6">
+            <label class="form-label">Fecha Próximo Mantenimiento</label>
+            <input type="date" class="form-control" formControlName="fechaProximo">
+          </div>
+
+          <!-- Fecha Fin -->
+          <div class="col-md-6">
+            <label class="form-label">Fecha de Finalización</label>
+            <input type="date" class="form-control" formControlName="fechaFin">
+          </div>
+
+          <!-- Descripción -->
+          <div class="col-md-12">
+            <label class="form-label">Descripción *</label>
+            <textarea class="form-control" formControlName="descripcion" rows="4"
+                      [class.is-invalid]="mantenimientoForm.get('descripcion')?.invalid && mantenimientoForm.get('descripcion')?.touched"
+                      placeholder="Detalle del trabajo realizado"></textarea>
+            <div class="invalid-feedback" *ngIf="mantenimientoForm.get('descripcion')?.invalid && mantenimientoForm.get('descripcion')?.touched">
+              La descripción es requerida
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="mt-4 d-flex gap-2">
+          <button type="submit" class="btn btn-primary" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            <i class="bi" [class.bi-save]="!submitting()"></i>
+            {{ isEditMode() ? 'Actualizar' : 'Guardar' }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="cancelar()">
+            <i class="bi bi-x-circle"></i>
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

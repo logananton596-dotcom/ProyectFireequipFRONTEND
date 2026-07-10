@@ -32,9 +32,10 @@ export class EquipoForm implements OnInit, OnDestroy {
   submitting = false;
   private subscriptions: Subscription = new Subscription();
 
-  // 💡 Listas estáticas para alimentar las opciones desplegables del formulario
+  // Listas estáticas para alimentar las opciones desplegables del formulario
   marcasSugeridas = ['Rosenbauer', 'Waterous', 'Hale', 'Akron Brass', 'Scott', 'Dräger', 'MSA', 'Bullard'];
   modelosSugeridas = ['Especializado Contra Incendios', 'Manguera de Alta Presión', 'ERA (Equipo de Respiración)', 'EPP (Traje Estructural)', 'Boquilla Regulable'];
+  estadosDisponibles: string[] = ['OPERATIVO', 'EN_MANTENIMIENTO', 'DADO_BAJA', 'FUERA_DE_SERVICIO'];
 
   constructor() {
     this.equipoForm = this.fb.group({
@@ -48,7 +49,8 @@ export class EquipoForm implements OnInit, OnDestroy {
       vidaUtilAnios: [null],
       ubicacionActual: [''],
       tipoEquipoId: [null, Validators.required],
-      areaId: [null, Validators.required]
+      areaId: [null, Validators.required],
+      estadoEquipoNombre: ['OPERATIVO', Validators.required] 
     });
   }
 
@@ -117,7 +119,8 @@ export class EquipoForm implements OnInit, OnDestroy {
             vidaUtilAnios: equipo.vidaUtilAnios || null,
             ubicacionActual: equipo.ubicacionActual || '',
             tipoEquipoId: equipo.tipoEquipoId,
-            areaId: equipo.areaId
+            areaId: equipo.areaId,
+            estadoEquipoNombre: equipo.estadoEquipoNombre || 'OPERATIVO'
           });
           this.loading = false;
           this.cdRef.detectChanges(); //  Despierta a Angular tras rellenar el formulario de edición
@@ -142,6 +145,10 @@ export class EquipoForm implements OnInit, OnDestroy {
     this.submitting = true;
     this.cdRef.detectChanges();
     const formValue = this.equipoForm.value;
+    // Tratamiento seguro de cadenas vacías para tipos primitivos del backend
+    if (formValue.vidaUtilAnios === '') formValue.vidaUtilAnios = null;
+    if (formValue.fechaCompra === '') formValue.fechaCompra = null;
+    if (formValue.tipoEquipoId === 'null') formValue.tipoEquipoId = null;
 
     if (this.isEditMode && this.equipoId) {
       this.subscriptions.add(
@@ -158,9 +165,11 @@ export class EquipoForm implements OnInit, OnDestroy {
           }
         })
       );
-    } else {
+    }
+    else {
+      // CORREGIDO: Enviamos formValue directamente ya que contiene el campo estadoEquipoNombre del select
       this.subscriptions.add(
-        this.equipoService.create(formValue).subscribe({
+        this.equipoService.create(formValue).subscribe({ 
           next: () => {
             this.toastr.success('Equipo creado correctamente', 'Éxito');
             this.router.navigate(['/equipos']);

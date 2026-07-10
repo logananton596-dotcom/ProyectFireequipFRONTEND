@@ -6,76 +6,96 @@
     </button>
   </div>
 
-  <div *ngIf="loading" class="text-center py-5">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Cargando...</span>
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-2 small">Recuperando ficha técnica...</p>
     </div>
-  </div>
+  }
 
-  <div *ngIf="!loading && equipo" class="card">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-      <h4 class="card-title mb-0">
-        <i class="bi bi-tools"></i>
-        {{ equipo.nombre }}
-      </h4>
-      <div>
-        <button class="btn btn-primary me-2" (click)="editar()">
-          <i class="bi bi-pencil"></i>
-          Editar
-        </button>
-        <button class="btn btn-danger" (click)="eliminar()">
-          <i class="bi bi-trash"></i>
-          Eliminar
-        </button>
-      </div>
-    </div>
-    <div class="card-body">
-      <div class="row">
-        <div class="col-md-6">
-          <table class="table table-borderless">
-            <tr>
-              <th width="40%">Código Interno:</th>
-              <td><strong>{{ equipo.codigoInterno }}</strong></td>
-            </tr>
-            <tr>
-              <th>Número de Serie:</th>
-              <td>{{ equipo.numeroSerie || 'N/A' }}</td>
-            </tr>
-            <tr>
-              <th>Nombre:</th>
-              <td>{{ equipo.nombre }}</td>
-            </tr>
-            <tr>
-              <th>Área:</th>
-              <td>{{ equipo.area || 'N/A' }}</td>
-            </tr>
-          </table>
-        </div>
-        <div class="col-md-6">
-          <table class="table table-borderless">
-            <tr>
-              <th width="40%">Marca:</th>
-              <td>{{ equipo.marca || 'N/A' }}</td>
-            </tr>
-            <tr>
-              <th>Modelo:</th>
-              <td>{{ equipo.modelo || 'N/A' }}</td>
-            </tr>
-            <tr>
-              <th>Tipo:</th>
-              <td>{{ equipo.tipoEquipoNombre || 'N/A' }}</td>
-            </tr>
-            <tr>
-              <th>Estado:</th>
-              <td>
-                <span class="badge" [class]="getEstadoBadgeClass(equipo.estadoEquipoNombre || '')">
-                  {{ equipo.estadoEquipoNombre || 'Sin estado' }}
-                </span>
-              </td>
-            </tr>
-          </table>
+  <!-- Vista de Ficha Técnica -->
+  @if (!loading && equipo) {
+    <div class="card shadow-sm border-0">
+      
+      <!-- Cabecera de Tarjeta Corregida -->
+      <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+        <h4 class="card-title mb-0 fw-bold text-dark">
+          <i class="bi bi-tools me-2 text-primary"></i> 
+          {{ equipo.nombre }}
+        </h4>
+        <div class="btn-group-container">
+          <button class="btn btn-primary me-2 shadow-sm" (click)="editar()">
+            <i class="bi bi-pencil me-1"></i>
+            Editar
+          </button>
+          <button class="btn btn-danger shadow-sm" (click)="eliminar()">
+            <i class="bi bi-trash me-1"></i>
+            Eliminar
+          </button>
         </div>
       </div>
+
+      <!-- Cuerpo de Tarjeta -->
+      <div class="card-body p-4">
+        <div class="row g-4">
+          
+          <!-- Columna Izquierda: Datos de Control -->
+          <div class="col-md-6">
+            <table class="table table-borderless align-middle mb-0">
+              <tbody>
+                <tr>
+                  <th width="40%" class="text-muted fw-semibold">Código Interno:</th>
+                  <td><strong class="text-dark">{{ equipo.codigoInterno }}</strong></td>
+                </tr>
+                <tr>
+                  <th class="text-muted fw-semibold">Número de Serie:</th>
+                  <td>{{ equipo.numeroSerie || 'N/A' }}</td>
+                </tr>
+                <tr>
+                  <th class="text-muted fw-semibold">Nombre Operativo:</th>
+                  <td>{{ equipo.nombre }}</td>
+                </tr>
+                <tr>
+                  <th class="text-muted fw-semibold">Estación / Área:</th>
+                  <td><span class="badge bg-light text-dark border">{{ equipo.area || 'N/A' }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Columna Derecha: Especificaciones Técnicas -->
+          <div class="col-md-6">
+            <table class="table table-borderless align-middle mb-0">
+              <tbody>
+                <tr>
+                  <th width="40%" class="text-muted fw-semibold">Marca Fabricante:</th>
+                  <td>{{ equipo.marca || 'N/A' }}</td>
+                </tr>
+                <tr>
+                  <th class="text-muted fw-semibold">Modelo Operación:</th>
+                  <td>{{ equipo.modelo || 'N/A' }}</td>
+                </tr>
+                <tr>
+                  <th class="text-muted fw-semibold">Categoría General:</th>
+                  <td>{{ equipo.tipoEquipoNombre || 'N/A' }}</td>
+                </tr>
+                <tr>
+                  <th class="text-muted fw-semibold">Situación Actual:</th>
+                  <td>
+                    <span class="badge shadow-sm px-3 py-2 fw-bold" [class]="getEstadoBadgeClass(equipo.estadoEquipoNombre || '')">
+                      {{ equipo.estadoEquipoNombre || 'Sin estado' }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+
     </div>
-  </div>
+  }
 </div>

@@ -25,9 +25,11 @@ export class EquiposList implements OnInit, OnDestroy {
   private equiposSignal = signal<Equipo[]>([]);
   loading = false;
   private subscriptions: Subscription = new Subscription();
-
-  // 2. Variable reactiva (Signal) para guardar el texto que el usuario escribe en tiempo real
+  // ====== VARIABLES PARA EL PAGINADO DINÁMICO ======
   searchTerm = signal<string>('');
+  paginaActual = signal(1);
+  tamanoPagina = signal(10); // Por defecto muestra de 10 en 10
+  opcionesTamano = [5, 10, 25, 50]; // Opciones del desplegable
 
   // 3. FILTRO ULTRA VELOZ: Se ejecuta automáticamente en la memoria del navegador cada vez que se escribe
   filteredEquipos = computed<Equipo[]>(() => {
@@ -49,9 +51,27 @@ export class EquiposList implements OnInit, OnDestroy {
     );
   });
 
-  // 4. Mapeamos el getter 'equipos' clásico al computed() para no romper compatibilidades
+  // ====== SIGNAL COMPUTADA CORREGIDA: Corta la lista filtrada para paginar ======
+  equiposPaginados = computed(() => {
+    const inicio = (this.paginaActual() - 1) * this.tamanoPagina();
+    const fin = inicio + this.tamanoPagina();
+    // 💡 CAMBIO: Apunta directamente a filteredEquipos() para que la paginación cambie si usas el buscador
+    return this.filteredEquipos().slice(inicio, fin); 
+  });
+
+  // ====== SIGNAL COMPUTADA CORREGIDA: Calcula el total de páginas según el filtro ======
+  totalPaginas = computed(() => {
+    // 💡 CAMBIO: Base del total calculada sobre los resultados que quedan del filtro
+    return Math.ceil(this.filteredEquipos().length / this.tamanoPagina()) || 1;
+  });
+
+  // Para mantener compatibilidad con métodos nativos si el HTML lo requiere
   get equipos(): Equipo[] {
     return this.filteredEquipos();
+  }
+  // Permite usar la función matemática de manera nativa en el template
+  get Math() {
+    return Math;
   }
 
   ngOnInit(): void {
@@ -66,6 +86,7 @@ export class EquiposList implements OnInit, OnDestroy {
           //  Guardamos los datos en la Signal usando .set()
           this.equiposSignal.set(data);
           this.loading = false;
+          this.paginaActual.set(1); 
           this.cdRef.detectChanges(); // Fuerza a Angular a pintar la tabla adaptativa
         },
         error: (error) => {
@@ -76,6 +97,26 @@ export class EquiposList implements OnInit, OnDestroy {
         }
       })
     );
+  }
+  // ====== MÉTODOS DE NAVEGACIÓN DE PÁGINAS ======
+  cambiarPagina(pagina: number): void {
+    if (pagina >= 1 && pagina <= this.totalPaginas()) {
+      this.paginaActual.set(pagina);
+      this.cdRef.detectChanges();
+    }
+  }
+    // ====== MÉTODO AGREGADO: Escucha la escritura del buscador y resetea la página ======
+  onSearchChange(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchTerm.set(value);
+    this.paginaActual.set(1); // Si el usuario busca algo, lo regresa automáticamente a la pág 1
+    this.cdRef.detectChanges();
+  }
+
+  onTamanoPaginaChange(nuevoTamano: number): void {
+    this.tamanoPagina.set(Number(nuevoTamano));
+    this.paginaActual.set(1); // Reestablece siempre a la página 1 si cambian el tamaño
+    this.cdRef.detectChanges();
   }
 
   verDetalle(id: number): void {
@@ -104,16 +145,18 @@ export class EquiposList implements OnInit, OnDestroy {
     }
   }
 
-  // 💡 Corregido: Adaptado a las mayúsculas reales de tu base de datos de Docker
+  // Corregido: Adaptado a las mayúsculas reales de tu base de datos de Docker
   getEstadoBadgeClass(estado: string): string {
+    if (!estado) return 'bg-secondary';
     const classes: Record<string, string> = {
       'OPERATIVO': 'bg-success',
-      'EN MANTENIMIENTO': 'bg-warning',
-      'FUERA DE SERVICIO': 'bg-danger'
+      'EN MANTENIMIENTO': 'bg-warning text-dark',
+      'EN_MANTENIMIENTO': 'bg-warning text-dark',
+      'FUERA DE SERVICIO': 'bg-danger',
+      'FUERA_DE_SERVICIO': 'bg-danger'
     };
-    return classes[estado.toUpperCase()] || 'bg-secondary';
+    return classes[estado.toUpperCase().trim()] || 'bg-secondary';
   }
-
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }

@@ -2,7 +2,7 @@ name: Build and Push Frontend Docker Image
 
 on:
   push:
-    branches: [ "Front1CasiFull" ]
+    branches: [ "MODULES" ]
 
 jobs:
   build:

@@ -4,10 +4,10 @@ export interface Mantenimiento {
   equipoCodigoInterno?: string;
   equipoNombre?: string;
   equipoMarca?: string;
-  fecha: string;
+  fecha: string;          // LocalDate - fecha del mantenimiento
   tipo: 'PREVENTIVO' | 'CORRECTIVO';
   descripcion: string;
   responsable: string;
-  fechaProximo?: string;
-  fechaFin?: string;
+  fechaProximo?: string;  // LocalDate - próxima revisión
+  fechaFin?: string;      // LocalDate - fecha de finalización
 }

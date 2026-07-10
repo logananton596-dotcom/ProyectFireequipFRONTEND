@@ -1,3 +1,5 @@
+// src/app/core/services/bombero.service.ts
+
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
@@ -6,7 +8,13 @@ import { Bombero } from '../models/bombero.model';
 @Injectable({
   providedIn: 'root'
 })
+
 export class BomberoService extends ApiService {
+
+
+  getActivos(): Observable<Bombero[]> {
+    return this.get<Bombero[]>('bomberos/activos');
+  }
 
   getAll(): Observable<Bombero[]> {
     return this.get<Bombero[]>('bomberos');
@@ -26,5 +34,15 @@ export class BomberoService extends ApiService {
 
   deleteById(id: number): Observable<void> {
     return this.delete<void>(`bomberos/${id}`);
+  }
+
+  
+  cambiarEstado(id: number, nuevoEstado: string, motivo?: string): Observable<void> {
+    // Construir URL con query params
+    let url = `bomberos/${id}/estado?nuevoEstado=${nuevoEstado}`;
+    if (motivo) {
+      url += `&motivo=${encodeURIComponent(motivo)}`;
+    } 
+    return this.patch<void>(url);
   }
 }

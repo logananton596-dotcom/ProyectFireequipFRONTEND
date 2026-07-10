@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
@@ -14,16 +14,15 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./equipo-detail.css']
 })
 export class EquipoDetail implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private equipoService = inject(EquipoService);
+  private toastr = inject(ToastrService);
+  private cdRef = inject(ChangeDetectorRef); // CORREGIDO: Inyectar detector de cambios
+
   equipo: Equipo | null = null;
   loading = false;
   private subscriptions: Subscription = new Subscription();
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private equipoService: EquipoService,
-    private toastr: ToastrService
-  ) {}
 
   ngOnInit(): void {
     this.loadEquipo();
@@ -37,16 +36,20 @@ export class EquipoDetail implements OnInit, OnDestroy {
     }
 
     this.loading = true;
+    this.cdRef.detectChanges(); // Forzar animación de cargando en la interfaz
+
     this.subscriptions.add(
       this.equipoService.getById(id).subscribe({
         next: (equipo) => {
           this.equipo = equipo;
           this.loading = false;
+          this.cdRef.detectChanges(); // Forzar actualización de la interfaz después de cargar el equipo
         },
         error: (error) => {
           console.error('Error cargando equipo:', error);
           this.toastr.error('Error cargando el equipo', 'Error');
           this.loading = false;
+          this.cdRef.detectChanges(); // Forzar actualización de la interfaz en caso de error
           this.router.navigate(['/equipos']);
         }
       })
@@ -81,12 +84,20 @@ export class EquipoDetail implements OnInit, OnDestroy {
   }
 
   getEstadoBadgeClass(estado: string): string {
-    const classes: Record<string, string> = {
-      'Operativo': 'bg-success',
-      'En Mantenimiento': 'bg-warning',
-      'Fuera de Servicio': 'bg-danger'
-    };
-    return classes[estado] || 'bg-secondary';
+    if (!estado) return 'bg-secondary';
+    switch (estado.toUpperCase().trim()) {
+      case 'OPERATIVO':
+        return 'bg-success text-white';
+      case 'EN MANTENIMIENTO':
+      case 'EN_MANTENIMIENTO':
+        return 'bg-warning text-dark';
+      case 'FUERA DE SERVICIO':
+      case 'FUERA_DE_SERVICIO':
+      case 'DADO_BAJA':
+        return 'bg-danger text-white';
+      default:
+        return 'bg-secondary text-white';
+    }
   }
 
   ngOnDestroy(): void {

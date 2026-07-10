@@ -128,13 +128,27 @@
               <input type="number" class="form-control" formControlName="vidaUtilAnios" placeholder="Ej: 5">
             </div>
 
-            <!-- Ubicación -->
-            <div class="col-md-12">
+            <!-- Ubicación Física Actual (Ajustado de col-md-12 a col-md-8) -->
+            <div class="col-md-8">
               <label class="form-label fw-semibold">Ubicación Física Actual</label>
               <input type="text" class="form-control" formControlName="ubicacionActual" placeholder="Ej: Casillero 12 - Unidad de Rescate Móvil">
             </div>
-          </div>
 
+            <!-- NUEVO DESPLEGABLE: Estado Operativo del Equipo (col-md-4) -->
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Estado de Operación *</label>
+              <select class="form-select" formControlName="estadoEquipoNombre"
+                      [class.is-invalid]="equipoForm.get('estadoEquipoNombre')?.invalid && equipoForm.get('estadoEquipoNombre')?.touched">
+                <option [value]="''" disabled>Seleccione estado...</option>
+                @for (estado of estadosDisponibles; track estado) {
+                  <option [value]="estado">{{ estado.replace('_', ' ') }}</option>
+                }
+              </select>
+              @if (equipoForm.get('estadoEquipoNombre')?.invalid && equipoForm.get('estadoEquipoNombre')?.touched) {
+                <div class="invalid-feedback">El estado operativo es requerido.</div>
+              }
+            </div>
+          </div>
           <!-- Botones de Acción Internos -->
           <div class="mt-4 d-flex gap-2 justify-content-end border-top pt-3">
             <button type="button" class="btn btn-light border" (click)="cancelar()">
