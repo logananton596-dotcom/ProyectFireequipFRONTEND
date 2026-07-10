@@ -6,9 +6,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# Copiar el código fuente y compilar
+# Copiar el código fuente y compilar --configuration=production
 COPY . .
-RUN npm run build -- --configuration=production
+RUN npm run build --legacy-peer-deps
 
 # ====== STAGE 2: Run ======
 FROM node:20.20.2-alpine
