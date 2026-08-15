@@ -1,9 +1,20 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject} from '@angular/core';
+// src/app/modules/equipos/pages/equipo-detail/equipo-detail.component.ts
+
+import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { EquipoService } from '../../../../core/services/equipo.service';
-import { Equipo } from '../../../../core/models/equipo.model';
+import {
+  Equipo,
+  formatearNombreEquipo,
+  formatearTipoEquipo,
+  formatearTipoInventario,
+  formatearEstadoEquipo,
+  getEstadoEquipoBadgeClass
+} from '../../../../core/models/equipo.model';
+import { formatearCompania } from '../../../../core/models/bombero.model';
+import { formatearNombreArea } from '../../../../core/models/area.model';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -13,16 +24,24 @@ import { Subscription } from 'rxjs';
   templateUrl: './equipo-detail.html',
   styleUrls: ['./equipo-detail.css']
 })
-export class EquipoDetail implements OnInit, OnDestroy {
+export class EquiposDetail implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private equipoService = inject(EquipoService);
   private toastr = inject(ToastrService);
-  private cdRef = inject(ChangeDetectorRef); // CORREGIDO: Inyectar detector de cambios
 
-  equipo: Equipo | null = null;
-  loading = false;
+  equipo = signal<Equipo | null>(null);
+  loading = signal(false);
   private subscriptions: Subscription = new Subscription();
+
+  // Helpers
+  formatearNombreEquipo = formatearNombreEquipo;
+  formatearTipoEquipo = formatearTipoEquipo;
+  formatearTipoInventario = formatearTipoInventario;
+  formatearEstadoEquipo = formatearEstadoEquipo;
+  formatearCompania = formatearCompania;
+  formatearNombreArea = formatearNombreArea;
+  getEstadoEquipoBadgeClass = getEstadoEquipoBadgeClass;
 
   ngOnInit(): void {
     this.loadEquipo();
@@ -35,21 +54,16 @@ export class EquipoDetail implements OnInit, OnDestroy {
       return;
     }
 
-    this.loading = true;
-    this.cdRef.detectChanges(); // Forzar animación de cargando en la interfaz
-
+    this.loading.set(true);
     this.subscriptions.add(
       this.equipoService.getById(id).subscribe({
         next: (equipo) => {
-          this.equipo = equipo;
-          this.loading = false;
-          this.cdRef.detectChanges(); // Forzar actualización de la interfaz después de cargar el equipo
+          this.equipo.set(equipo);
+          this.loading.set(false);
         },
-        error: (error) => {
-          console.error('Error cargando equipo:', error);
+        error: () => {
           this.toastr.error('Error cargando el equipo', 'Error');
-          this.loading = false;
-          this.cdRef.detectChanges(); // Forzar actualización de la interfaz en caso de error
+          this.loading.set(false);
           this.router.navigate(['/equipos']);
         }
       })
@@ -57,22 +71,25 @@ export class EquipoDetail implements OnInit, OnDestroy {
   }
 
   editar(): void {
-    if (this.equipo?.id) {
-      this.router.navigate(['/equipos', this.equipo.id, 'editar']);
+    const equipo = this.equipo();
+    if (equipo?.id) {
+      this.router.navigate(['/equipos', equipo.id, 'editar']);
     }
   }
 
   eliminar(): void {
-    if (!this.equipo) return;
-    if (confirm(`¿Está seguro de eliminar el equipo "${this.equipo.nombre}"?`)) {
+    const equipo = this.equipo();
+    if (!equipo) return;
+
+    if (confirm(`¿Está seguro de eliminar el equipo "${formatearNombreEquipo(equipo.nombreEquipo)}"?`)) {
       this.subscriptions.add(
-        this.equipoService.deleteById(this.equipo!.id!).subscribe({
+        this.equipoService.deleteById(equipo.id!).subscribe({
           next: () => {
             this.toastr.success('Equipo eliminado correctamente', 'Éxito');
             this.router.navigate(['/equipos']);
           },
-          error: () => {
-            this.toastr.error('Error eliminando el equipo', 'Error');
+          error: (error) => {
+            this.toastr.error(error.error?.message || 'Error eliminando el equipo', 'Error');
           }
         })
       );
@@ -83,21 +100,28 @@ export class EquipoDetail implements OnInit, OnDestroy {
     this.router.navigate(['/equipos']);
   }
 
-  getEstadoBadgeClass(estado: string): string {
-    if (!estado) return 'bg-secondary';
-    switch (estado.toUpperCase().trim()) {
-      case 'OPERATIVO':
-        return 'bg-success text-white';
-      case 'EN MANTENIMIENTO':
-      case 'EN_MANTENIMIENTO':
-        return 'bg-warning text-dark';
-      case 'FUERA DE SERVICIO':
-      case 'FUERA_DE_SERVICIO':
-      case 'DADO_BAJA':
-        return 'bg-danger text-white';
-      default:
-        return 'bg-secondary text-white';
-    }
+  getAsignadoBadgeClass(asignado: boolean): string {
+    return asignado ? 'bg-primary text-white' : 'bg-secondary text-white';
+  }
+
+  formatFecha(date: Date | null | string | undefined): string {
+    if (!date) return 'N/A';
+    const d = new Date(date);
+    return d.toLocaleDateString('es-PE', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+
+  // Verifica si es inventario INDIVIDUAL
+  esIndividual(): boolean {
+    return this.equipo()?.tipoInventario === 'INDIVIDUAL';
+  }
+
+  // Verifica si es inventario MULTIPLE
+  esMultiple(): boolean {
+    return this.equipo()?.tipoInventario === 'MULTIPLE';
   }
 
   ngOnDestroy(): void {

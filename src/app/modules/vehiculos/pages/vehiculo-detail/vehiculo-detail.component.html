@@ -1,0 +1,242 @@
+<div class="vehiculo-detail-container">
+  <!-- Botón Volver -->
+  <div class="mb-3">
+    <button class="btn btn-outline-secondary" (click)="volver()">
+      <i class="bi bi-arrow-left"></i>
+      Volver
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-2 small">Cargando información del vehículo...</p>
+    </div>
+  }
+
+  @if (!loading() && vehiculo()) {
+    <div class="card shadow-sm border-0">
+      <!-- Header -->
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h4 class="card-title mb-0 fw-bold text-dark">
+          <i class="bi bi-truck text-primary me-2"></i>
+          {{ formatearNombreVehiculo(vehiculo()!.nombreVehiculo) }}
+          <span class="badge ms-2" [class]="getEstadoBadgeClass(vehiculo()!.estado)">
+            {{ formatearEstadoVehiculo(vehiculo()!.estado) }}
+          </span>
+        </h4>
+        <div>
+          @if (puedeCambiarEstado()) {
+            <div class="btn-group me-2" role="group">
+              <button type="button" class="btn btn-outline-warning dropdown-toggle" 
+                      data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-arrow-repeat me-1"></i> Cambiar Estado
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                @if (vehiculo()!.estado !== 'OPERATIVO') {
+                  <li><a class="dropdown-item" (click)="cambiarEstado('OPERATIVO')">
+                    <i class="bi bi-check-circle text-success me-2"></i> OPERATIVO
+                  </a></li>
+                }
+                @if (vehiculo()!.estado !== 'MANTENIMIENTO') {
+                  <li><a class="dropdown-item" (click)="cambiarEstado('MANTENIMIENTO')">
+                    <i class="bi bi-tools text-warning me-2"></i> MANTENIMIENTO
+                  </a></li>
+                }
+                @if (vehiculo()!.estado !== 'BAJA') {
+                  <li><a class="dropdown-item" (click)="cambiarEstado('BAJA')">
+                    <i class="bi bi-x-circle text-danger me-2"></i> BAJA
+                  </a></li>
+                }
+              </ul>
+            </div>
+          }
+          <button class="btn btn-primary me-2" (click)="editar()">
+            <i class="bi bi-pencil"></i>
+            Editar
+          </button>
+          <button class="btn btn-danger" (click)="eliminar()">
+            <i class="bi bi-trash"></i>
+            Eliminar
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="row">
+          <!-- Columna Izquierda -->
+          <div class="col-md-6">
+            <h6 class="text-muted border-bottom pb-2 mb-3">
+              <i class="bi bi-tag me-2"></i>Identificación
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Código:</th>
+                <td><strong>{{ vehiculo()!.codigo }}</strong></td>
+              </tr>
+              <tr>
+                <th>Nombre Vehículo:</th>
+                <td>{{ formatearNombreVehiculo(vehiculo()!.nombreVehiculo) }}</td>
+              </tr>
+              <tr>
+                <th>Placa:</th>
+                <td><strong>{{ vehiculo()!.placa }}</strong></td>
+              </tr>
+            </table>
+
+            <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">
+              <i class="bi bi-tags me-2"></i>Clasificación
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Marca:</th>
+                <td>{{ formatearMarcaVehiculo(vehiculo()!.marca) }}</td>
+              </tr>
+              <tr>
+                <th>Tipo Vehículo:</th>
+                <td>{{ formatearTipoVehiculo(vehiculo()!.tipoVehiculo) }}</td>
+              </tr>
+              <tr>
+                <th>Estado:</th>
+                <td>
+                  <span class="badge shadow-sm px-3 py-2 fw-bold" [class]="getEstadoBadgeClass(vehiculo()!.estado)">
+                    {{ formatearEstadoVehiculo(vehiculo()!.estado) }}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <th>Activo:</th>
+                <td>
+                  <span class="badge" [class.bg-success]="vehiculo()!.activo" [class.bg-secondary]="!vehiculo()!.activo">
+                    {{ vehiculo()!.activo ? 'Sí' : 'No' }}
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Columna Derecha -->
+          <div class="col-md-6">
+            <h6 class="text-muted border-bottom pb-2 mb-3">
+              <i class="bi bi-gear me-2"></i>Datos Técnicos
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Modelo:</th>
+                <td>{{ vehiculo()!.modelo || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Año:</th>
+                <td>{{ vehiculo()!.anio || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Número Motor:</th>
+                <td>{{ vehiculo()!.numeroMotor || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Número Chasis:</th>
+                <td>{{ vehiculo()!.numeroChasis || 'N/A' }}</td>
+              </tr>
+            </table>
+
+            <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">
+              <i class="bi bi-droplet me-2"></i>Capacidades
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Capacidad Agua:</th>
+                <td>{{ vehiculo()!.capacidadAgua ? (vehiculo()!.capacidadAgua + ' L') : 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Capacidad Espuma:</th>
+                <td>{{ vehiculo()!.capacidadEspuma ? (vehiculo()!.capacidadEspuma + ' L') : 'N/A' }}</td>
+              </tr>
+            </table>
+
+            <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">
+              <i class="bi bi-geo-alt me-2"></i>Ubicación
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Ubicación:</th>
+                <td><strong>{{ vehiculo()!.nombreUbicacion }}</strong></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Observación -->
+        @if (vehiculo()!.observacion) {
+          <div class="row mt-3">
+            <div class="col-12">
+              <hr>
+              <h6 class="text-muted mb-2"><i class="bi bi-chat me-2"></i>Observación</h6>
+              <div class="p-3 bg-light rounded">
+                {{ vehiculo()!.observacion }}
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Información Adicional en Cards -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <hr>
+            <h6 class="text-muted mb-2"><i class="bi bi-grid me-2"></i>Resumen</h6>
+            <div class="row g-3">
+              <div class="col-md-3">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">ID Vehículo</small>
+                    <strong>#{{ vehiculo()!.id }}</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">Tipo</small>
+                    <strong>{{ formatearTipoVehiculo(vehiculo()!.tipoVehiculo) }}</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">Estado</small>
+                    <span class="badge" [class]="getEstadoBadgeClass(vehiculo()!.estado)">
+                      {{ formatearEstadoVehiculo(vehiculo()!.estado) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">Ubicación</small>
+                    <strong>{{ vehiculo()!.nombreUbicacion }}</strong>
+                  </div>
+                </div>
+              </div>
+                <div>
+              <!-- Botón para ir a Compartimientos -->
+              <button class="btn btn-outline-info me-2" 
+                      [routerLink]="['/vehiculos', vehiculo()!.id, 'compartimientos']">
+                <i class="bi bi-grid me-1"></i> Compartimientos
+              </button>
+              <button class="btn btn-primary me-2" (click)="editar()">
+                <i class="bi bi-pencil"></i> Editar
+              </button>
+              <button class="btn btn-danger" (click)="eliminar()">
+                <i class="bi bi-trash"></i> Eliminar
+              </button>
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

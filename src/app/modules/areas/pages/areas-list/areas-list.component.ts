@@ -4,82 +4,138 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms'; // OBLIGATORIO: Para habilitar el buscador con [(ngModel)]
 import { ToastrService } from 'ngx-toastr';
 import { AreaService } from '../../../../core/services/area.service';
-import { AuthService } from '../../../../core/services/auth.service';
-import { Area } from '../../../../core/models/area.model';
+import { Area, formatearNombreArea } from '../../../../core/models/area.model';
+import { BomberoService } from '../../../../core/services/bombero.service';
 import { Subscription } from 'rxjs';
+import { Bombero } from '../../../../core/models/bombero.model';
+
 
 @Component({
   selector: 'app-areas-list',
   standalone: true,
-  // Añadido FormsModule para activar el buscador reactivo
-  imports: [CommonModule, RouterLink, FormsModule], 
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './areas-list.component.html',
   styleUrls: ['./areas-list.component.css']
 })
 export class AreasListComponent implements OnInit, OnDestroy {
-  // 💡 Inyección de dependencias moderna sin constructor rígido
   private areaService = inject(AreaService);
-  private authService = inject(AuthService);
+  private bomberoService = inject(BomberoService);
   private router = inject(Router);
   private toastr = inject(ToastrService);
-  private cdRef = inject(ChangeDetectorRef); // Previene atascos con el Layout elástico
+  private cdRef = inject(ChangeDetectorRef);
 
-  areasSignal = signal<Area[]>([]);
-  loading = signal(false);
+  private areasSignal = signal<Area[]>([]);
+  private bomberosMap = new Map<number, Bombero>(); // Cache de bomberos
+  loading = false;
   private subscriptions: Subscription = new Subscription();
 
-  // 1. Variable reactiva (Signal) para guardar lo que escribe el usuario
   searchTerm = signal<string>('');
+  paginaActual = signal(1);
+  tamanoPagina = signal(10);
+  opcionesTamano = [5, 10, 25, 50];
+  formatearNombreArea = formatearNombreArea;
 
-  // 2. VALIDACIÓN DE ROL REACTIVA: Evalúa de forma segura la estructura anidada del token JWT
-  isAdmin = computed<boolean>(() => {
-    const user = this.authService.currentUser();
-    return !!(user && user.rol && user.rol.nombre && user.rol.nombre.includes('ADMIN'));
-  });
-
-  // 3.  FILTRO ULTRA VELOZ: Filtra las áreas en tiempo real sin recargar la página
+  // Filtro de áreas
   filteredAreas = computed<Area[]>(() => {
     const term = this.searchTerm().toLowerCase().trim();
     const listaOriginal = this.areasSignal();
 
-    if (!term) {
-      return listaOriginal; // Si el buscador está vacío, muestra todas
-    }
+    if (!term) return listaOriginal;
 
-    // Filtra dinámicamente por el nombre de la estación o por el encargado
-    return listaOriginal.filter(area => 
-      (area.nombre && area.nombre.toLowerCase().includes(term)) ||
-      (area.encargado && area.encargado.toLowerCase().includes(term))
-    );
+    return listaOriginal.filter(area => {
+      const nombreAreaOriginal = area.nombreArea || (area as any).NombreArea;
+      const nombre = nombreAreaOriginal ? formatearNombreArea(nombreAreaOriginal).toLowerCase() : '';
+      const encargado1 = this.getBomberoNombre(area.encargado1Id).toLowerCase();
+      const encargado2 = area.encargado2Id ? this.getBomberoNombre(area.encargado2Id).toLowerCase() : '';
+      
+      return nombre.includes(term) ||
+             encargado1.includes(term) ||
+             encargado2.includes(term);
+    });
   });
 
-  // Mantenemos este getter clásico mapeado al computed() para dar soporte inmediato a tu HTML
-  get areas(): Area[] {
-    return this.filteredAreas();
-  }
+  areasPaginados = computed(() => {
+    const inicio = (this.paginaActual() - 1) * this.tamanoPagina();
+    const fin = inicio + this.tamanoPagina();
+    return this.filteredAreas().slice(inicio, fin);
+  });
+
+  totalPaginas = computed(() => {
+    return Math.ceil(this.filteredAreas().length / this.tamanoPagina()) || 1;
+  });
+
+  get Math() { return Math; }
 
   ngOnInit(): void {
+    this.cargarBomberos();
     this.loadAreas();
   }
 
-  loadAreas(): void {
-    this.loading.set(true);
-    this.cdRef.detectChanges();
-
+  private cargarBomberos(): void {
     this.subscriptions.add(
-      this.areaService.getAll().subscribe({
-        next: (areas) => {
-          this.areasSignal.set(areas); // Guardamos la respuesta en la Signal base
-          this.loading.set(false);
-          this.cdRef.detectChanges(); // Despierta a Angular al recibir la lista de Docker
+      this.bomberoService.getAll().subscribe({
+        next: (bomberos) => {
+          bomberos.forEach(b => {
+            if (b.id) this.bomberosMap.set(b.id, b);
+          });
         },
         error: () => {
-          this.toastr.error('Error al cargar las áreas', 'Error');
-          this.loading.set(false);
+          this.toastr.warning('No se pudieron cargar los bomberos para el autocomplete', 'Advertencia');
+        }
+      })
+    );
+  }
+
+  loadAreas(): void {
+    this.loading = true;
+    this.subscriptions.add(
+      this.areaService.getAll().subscribe({
+        next: (data) => {
+          this.areasSignal.set(data);
+          this.loading = false;
+          this.paginaActual.set(1);
+          this.cdRef.detectChanges();
+        },
+        error: (error) => {
+          console.error('Error cargando áreas:', error);
+          this.toastr.error('Error al cargar la lista de áreas', 'Error');
+          this.loading = false;
           this.cdRef.detectChanges();
         }
       })
     );
+  }
+
+  // Helper para obtener nombre del bombero por ID
+  getBomberoNombre(id: number): string {
+    const bombero = this.bomberosMap.get(id);
+    if (!bombero) return `Bombero #${id}`;
+    return `${bombero.codigoCgbvp} - ${bombero.grado} ${bombero.nombre} ${bombero.apellido}`;
+  }
+
+  // Helper para badge de estado activo
+  getActivoBadgeClass(activo: boolean): string {
+    return activo ? 'bg-success text-white' : 'bg-danger text-white';
+  }
+
+  cambiarPagina(pagina: number): void {
+    if (pagina >= 1 && pagina <= this.totalPaginas()) {
+      this.paginaActual.set(pagina);
+      this.cdRef.detectChanges();
+    }
+  }
+
+  onTamanoPaginaChange(nuevoTamano: number): void {
+    this.tamanoPagina.set(Number(nuevoTamano));
+    this.paginaActual.set(1);
+    this.cdRef.detectChanges();
+  }
+
+  onSearchChange(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchTerm.set(value);
+    this.paginaActual.set(1);
+    this.cdRef.detectChanges();
   }
 
   verDetalle(id: number): void {
@@ -87,28 +143,19 @@ export class AreasListComponent implements OnInit, OnDestroy {
   }
 
   editar(id: number): void {
-    if (this.isAdmin()) {
-      this.router.navigate(['/areas', id, 'editar']);
-    } else {
-      this.toastr.warning('No tiene permisos para editar áreas', 'Acceso denegado');
-    }
+    this.router.navigate(['/areas', id, 'editar']);
   }
 
   eliminar(id: number, nombre: string): void {
-    if (!this.isAdmin()) {
-      this.toastr.warning('No tiene permisos para eliminar áreas', 'Acceso denegado');
-      return;
-    }
-
     if (confirm(`¿Está seguro de eliminar el área "${nombre}"?`)) {
       this.subscriptions.add(
         this.areaService.deleteById(id).subscribe({
           next: () => {
             this.toastr.success('Área eliminada correctamente', 'Éxito');
-            this.loadAreas(); // Recarga automática limpia
+            this.loadAreas();
           },
-          error: () => {
-            this.toastr.error('Error al eliminar el área', 'Error');
+          error: (error) => {
+            this.toastr.error(error.error?.message || 'No se pudo eliminar el área', 'Error');
             this.cdRef.detectChanges();
           }
         })

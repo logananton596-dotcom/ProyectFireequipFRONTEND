@@ -43,16 +43,46 @@ export const routes: Routes = [
         loadChildren: () => import('./modules/equipos/equipos.routes').then(m => m.EQUIPOS_ROUTES)
       },
       {
+        path: 'epp',
+        loadChildren: () => import('./modules/epp/epp.routes').then(m => m.EPP_ROUTES)
+      },
+      {
+      path: 'bienes',
+      loadChildren: () => import('./modules/bienes/bien.routes').then(r => r.BIEN_ROUTES)
+      },
+      {
         path: 'bomberos',
         loadChildren: () => import('./modules/bomberos/bomberos.routes').then(m => m.BOMBEROS_ROUTES)
+      },
+      {
+      path: 'vehiculos',
+      loadChildren: () =>
+        import('./modules/vehiculos/vehiculo.routes').then(r => r.VEHICULO_ROUTES)
       },
       {
         path: 'areas',
         loadChildren: () => import('./modules/areas/areas.routes').then(m => m.AREAS_ROUTES)
       },
       {
+        path: 'ubicaciones',
+        loadChildren: () =>
+          import('./modules/ubicaciones/ubicaciones.routes').then(r => r.UBICACIONES_ROUTES)
+      },
+      {
+      path: 'oficinas',
+      loadChildren: () =>
+        import('./modules/oficinas/oficina.routes').then(r => r.OFICINA_ROUTES)
+      },
+      {
+      path: 'casilleros',
+      loadChildren: () =>
+        import('./modules/casilleros/casillero.routes')
+          .then(r => r.CASILLERO_ROUTES)
+      },
+      {
         path: 'asignaciones',
-        loadChildren: () => import('./modules/asignaciones/asignaciones.routes').then(m => m.ASIGNACIONES_ROUTES)
+        loadChildren: () =>
+          import('./modules/asignaciones/asignacion.routes').then(r => r.ASIGNACION_ROUTES)
       },
       {
         path: 'mantenimientos',

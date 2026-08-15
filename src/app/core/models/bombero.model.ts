@@ -46,10 +46,10 @@ export type GradoBombero =
 
 export type TipoSangre = 'O_POSITIVO' | 'O_NEGATIVO' | 'A_POSITIVO' | 'A_NEGATIVO' | 'B_POSITIVO' | 'B_NEGATIVO' | 'AB_POSITIVO' | 'AB_NEGATIVO';
 
-export type TipoCargo = 'NINGUNO' | 'PRIMER_JEFE' | 'SEGUNDO_JEFE' | 'JEFE_DE_SERVICIOS' | 'JEFE_DE_OPERACIONES';
+export type TipoCargo = 'NINGUNO' | 'PRIMER_JEFE' | 'SEGUNDO_JEFE' | 'JEFE_DE_SERVICIOS' | 'JEFE_DE_OPERACIONES' | 'JEFE_DE_ADMINISTRACION' | 'JEFE_DE_IMAGEN' | 'JEFE_DE_SANIDAD';
 
 // Corregido el error de dedo en la minúscula de b69
-export type CompaniaBombero = 'B68_ABANCAY' | 'B69_SANTA_ROSA'; 
+export type CompaniaBombero = 'B68_ABANCAY'; 
 
 export type TipoVehiculoLicencia = 'NINGUNO' | 'MOTOCICLETA' | 'VEHICULO_LIGERO' | 'VEHICULO_PESADO';
 
@@ -60,8 +60,8 @@ export type TipoLicencia = 'AI' | 'AIIa' | 'AIIb' | 'AIIIa' | 'AIIIb' | 'AIIIc' 
 export const ESTADOS_BOMBERO: EstadoBombero[] = ['ACTIVO', 'RESERVA', 'BAJA'];
 export const GRADOS_BOMBERO: GradoBombero[] = ['POSTULANTE', 'SECCIONARIO', 'SUBTENIENTE', 'TENIENTE', 'CAPITAN', 'TENIENTE_BRIGADIER', 'BRIGADIER', 'BRIGADIER_MAYOR'];
 export const TIPOS_SANGRE: TipoSangre[] = ['O_POSITIVO', 'O_NEGATIVO', 'A_POSITIVO', 'A_NEGATIVO', 'B_POSITIVO', 'B_NEGATIVO', 'AB_POSITIVO', 'AB_NEGATIVO'];
-export const TIPOS_CARGO: TipoCargo[] = ['NINGUNO', 'PRIMER_JEFE', 'SEGUNDO_JEFE', 'JEFE_DE_SERVICIOS', 'JEFE_DE_OPERACIONES'];
-export const COMPANIAS_BOMBERO: CompaniaBombero[] = ['B68_ABANCAY', 'B69_SANTA_ROSA'];
+export const TIPOS_CARGO: TipoCargo[] = ['NINGUNO', 'PRIMER_JEFE', 'SEGUNDO_JEFE', 'JEFE_DE_SERVICIOS', 'JEFE_DE_OPERACIONES', 'JEFE_DE_ADMINISTRACION', 'JEFE_DE_IMAGEN', 'JEFE_DE_SANIDAD'];
+export const COMPANIAS_BOMBERO: CompaniaBombero[] = ['B68_ABANCAY'];
 export const TIPOS_VEHICULO_LICENCIA: TipoVehiculoLicencia[] = ['NINGUNO', 'MOTOCICLETA', 'VEHICULO_LIGERO', 'VEHICULO_PESADO'];
 export const TIPOS_LICENCIA: TipoLicencia[] = ['AI', 'AIIa', 'AIIb', 'AIIIa', 'AIIIb', 'AIIIc', 'NINGUNO'];
 

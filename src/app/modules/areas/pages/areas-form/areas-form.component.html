@@ -1,64 +1,215 @@
-<div class="area-form-container">
-  <div class="card">
-    <div class="card-header bg-white">
-      <h4 class="card-title mb-0">
-        <i class="bi" [class.bi-plus-circle]="!isEditMode()" [class.bi-pencil-square]="isEditMode()"></i>
+<div class="areas-form-container">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+      <h4 class="card-title mb-0 fw-bold text-dark">
+        <i class="bi text-primary me-2" [class.bi-plus-circle]="!isEditMode()" [class.bi-pencil-square]="isEditMode()"></i>
         {{ isEditMode() ? 'Editar Área' : 'Nueva Área' }}
       </h4>
     </div>
-    <div class="card-body">
+    <div class="card-body p-4">
       @if (loading()) {
         <div class="text-center py-5">
           <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Cargando...</span>
           </div>
+          <p class="text-muted mt-2 small">Sincronizando información del área...</p>
         </div>
       }
 
       <form [formGroup]="areaForm" (ngSubmit)="onSubmit()">
-        <div class="row g-3">
-          <!-- Nombre -->
-          <div class="col-md-12">
-            <label class="form-label">Nombre del Área *</label>
-            <input type="text" class="form-control" formControlName="nombre"
-                   [class.is-invalid]="areaForm.get('nombre')?.invalid && areaForm.get('nombre')?.touched"
-                   placeholder="Ej: Estación Central">
-            <div class="invalid-feedback" *ngIf="areaForm.get('nombre')?.invalid && areaForm.get('nombre')?.touched">
-              El nombre del área es requerido
+        <div class="row g-4">
+          
+          <!-- Nombre del Área (Select) -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Nombre del Área *</label>
+            <select class="form-select" formControlName="nombreArea"
+                    [class.is-invalid]="areaForm.get('nombreArea')?.invalid && areaForm.get('nombreArea')?.touched">
+              <option value="" disabled>Seleccione un área...</option>
+              @for (nombre of nombresArea; track nombre) {
+                <option [value]="nombre">{{ formatearNombreArea(nombre) }}</option>
+              }
+            </select>
+            @if (areaForm.get('nombreArea')?.invalid && areaForm.get('nombreArea')?.touched) {
+              <div class="invalid-feedback">El nombre del área es requerido</div>
+            }
+          </div>
+
+          <!-- Estado Activo -->
+          <div class="col-md-6 d-flex align-items-end pb-1">
+            <div class="form-check form-switch bg-light border rounded px-4 py-2 w-100 shadow-sm">
+              <input type="checkbox" class="form-check-input ms-0 me-2" formControlName="activo"
+                     id="activo" role="switch">
+              <label class="form-check-label fw-semibold text-dark" for="activo">
+                Área Activa
+              </label>
             </div>
           </div>
 
-          <!-- Encargado -->
-          <div class="col-md-12">
-            <label class="form-label">Encargado *</label>
-            <input type="text" class="form-control" formControlName="encargado"
-                   [class.is-invalid]="areaForm.get('encargado')?.invalid && areaForm.get('encargado')?.touched"
-                   placeholder="Nombre del responsable del área">
-            <div class="invalid-feedback" *ngIf="areaForm.get('encargado')?.invalid && areaForm.get('encargado')?.touched">
-              El encargado es requerido
+          <!-- Encargado Principal (Autocomplete Dinámico) -->
+        
+            <!-- Encargado Principal (Autocomplete Dinámico) -->
+            <div class="col-md-6 position-relative">
+              <label class="form-label fw-semibold">Encargado Principal *</label>
+              
+              <input type="hidden" formControlName="encargado1Id">
+
+              @if (!areaForm.get('encargado1Id')?.value) {
+                <div class="input-group shadow-sm">
+                  <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                  <input type="text" #txtBuscar1 class="form-control border-start-0 ps-0" 
+                        placeholder="Buscar por código, nombre o apellido..."
+                        [class.is-invalid]="areaForm.get('encargado1Id')?.invalid && areaForm.get('encargado1Id')?.touched"
+                        (focus)="ejecutarFiltro1(txtBuscar1.value)"
+                        (input)="ejecutarFiltro1(txtBuscar1.value)">
+                </div>
+
+                @if (txtBuscar1.value.trim() && filteredBomberos1.length > 0) {
+                  <div class="list-group shadow position-absolute w-100 mt-1" style="max-height: 200px; overflow-y: auto; z-index: 1050; padding-right: 15px;">
+                    @for (bombero of filteredBomberos1; track bombero.id) {
+                      <!-- ========== AGREGAR CLASE Y BADGE PARA ASIGNADOS ========== -->
+                      <button type="button" class="list-group-item list-group-item-action text-start py-2 small"
+                              [class.text-danger]="bomberosAsignados.has(bombero.id!)"
+                              (click)="seleccionarEncargado1(bombero); txtBuscar1.value = ''">
+                        <i class="bi me-2" 
+                          [class.bi-person-fill]="!bomberosAsignados.has(bombero.id!)" 
+                          [class.bi-person-fill-exclamation]="bomberosAsignados.has(bombero.id!)"
+                          [class.text-primary]="!bomberosAsignados.has(bombero.id!)" 
+                          [class.text-danger]="bomberosAsignados.has(bombero.id!)"></i> 
+                        {{ getBomberoDisplay(bombero) }}
+                        <!-- ========== BADGE DE ASIGNADO ========== -->
+                        @if (bomberosAsignados.has(bombero.id!)) {
+                          <span class="badge bg-danger ms-2">Asignado</span>
+                        }
+                      </button> 
+                    }
+                  </div>
+                }
+              } @else {
+                <div class="form-control d-flex justify-content-between align-items-center bg-light border-success py-2 shadow-sm animate__animated animate__fadeIn">
+                  <div class="text-success text-truncate me-2">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <strong>{{ getBomberoById(areaForm.get('encargado1Id')?.value) }}</strong>
+                  </div>
+                  <button type="button" class="btn-close btn-sm p-1" (click)="limpiarEncargado1()" title="Cambiar Encargado Principal"></button>
+                </div>
+              }
+
+              @if (areaForm.get('encargado1Id')?.invalid && areaForm.get('encargado1Id')?.touched) {
+                <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>El encargado principal es requerido</div>
+              }
             </div>
+
+            <!-- Encargado Secundario (Autocomplete Dinámico) -->
+            <div class="col-md-6 position-relative">
+              <label class="form-label fw-semibold">Encargado Secundario</label>
+              
+              <input type="hidden" formControlName="encargado2Id">
+
+              @if (!areaForm.get('encargado2Id')?.value) {
+                <div class="input-group shadow-sm">
+                  <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                  <input type="text" #txtBuscar2 class="form-control border-start-0 ps-0" 
+                        placeholder="Buscar por código, nombre o apellido..."
+                        (focus)="ejecutarFiltro2(txtBuscar2.value)"
+                        (input)="ejecutarFiltro2(txtBuscar2.value)">
+                </div>
+
+                @if (txtBuscar2.value.trim() && filteredBomberos2.length > 0) {
+                  <div class="list-group shadow position-absolute w-100 mt-1" style="max-height: 200px; overflow-y: auto; z-index: 1050; padding-right: 15px;">
+                    @for (bombero of filteredBomberos2; track bombero.id) {
+                      <!-- ========== AGREGAR CLASE Y BADGE PARA ASIGNADOS ========== -->
+                      <button type="button" class="list-group-item list-group-item-action text-start py-2 small"
+                              [class.text-danger]="bomberosAsignados.has(bombero.id!)"
+                              (click)="seleccionarEncargado2(bombero); txtBuscar2.value = ''">
+                        <i class="bi me-2" 
+                          [class.bi-person]="!bomberosAsignados.has(bombero.id!)" 
+                          [class.bi-person-exclamation]="bomberosAsignados.has(bombero.id!)"
+                          [class.text-secondary]="!bomberosAsignados.has(bombero.id!)" 
+                          [class.text-danger]="bomberosAsignados.has(bombero.id!)"></i> 
+                        {{ getBomberoDisplay(bombero) }}
+                        <!-- ========== BADGE DE ASIGNADO ========== -->
+                        @if (bomberosAsignados.has(bombero.id!)) {
+                          <span class="badge bg-danger ms-2">Asignado</span>
+                        }
+                      </button>
+                    }
+                  </div>
+                }
+              } @else {
+                <div class="form-control d-flex justify-content-between align-items-center bg-light border-secondary py-2 shadow-sm animate__animated animate__fadeIn">
+                  <div class="text-secondary text-truncate me-2">
+                    <i class="bi bi-person-check-fill me-2 text-muted"></i>
+                    {{ getBomberoById(areaForm.get('encargado2Id')?.value) }}
+                  </div>
+                  <button type="button" class="btn-close btn-sm p-1" (click)="limpiarEncargado2()" title="Cambiar Encargado Secundario"></button>
+                </div>
+              }
+            </div>
+          <!-- ========== FECHA INICIO - ACTUALIZADA ========== -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Fecha de Inicio *</label>
+            <input type="date" class="form-control shadow-sm" formControlName="fechaInicio"
+                   [min]="fechaMinimaInicio"
+                   [class.is-invalid]="areaForm.get('fechaInicio')?.invalid && areaForm.get('fechaInicio')?.touched">
+            
+            <!-- Mensajes de error específicos para fecha de inicio -->
+            @if (areaForm.get('fechaInicio')?.invalid && areaForm.get('fechaInicio')?.touched) {
+              @if (areaForm.get('fechaInicio')?.errors?.['required']) {
+                <div class="invalid-feedback">La fecha de inicio es requerida</div>
+              }
+              @if (areaForm.get('fechaInicio')?.errors?.['fechaInicioAntigua']) {
+                <div class="invalid-feedback">La fecha de inicio debe ser mayor o igual al año 2026</div>
+              }
+            }
+            <small class="text-muted">Fecha mínima: 01/01/2026</small>
           </div>
 
-          <!-- Teléfono -->
+          <!-- ========== FECHA FIN - ACTUALIZADA ========== -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Fecha de Fin</label>
+            <input type="date" class="form-control shadow-sm" formControlName="fechaFin"
+                   [min]="fechaMinimaFin"
+                   [class.is-invalid]="areaForm.get('fechaFin')?.invalid && areaForm.get('fechaFin')?.touched">
+            
+            <!-- Mensaje de error específico para fecha de fin -->
+            @if (areaForm.get('fechaFin')?.invalid && areaForm.get('fechaFin')?.touched) {
+              @if (areaForm.get('fechaFin')?.errors?.['fechaFinAnteriorOIgual']) {
+                <div class="invalid-feedback">La fecha de fin debe ser posterior a la fecha de inicio</div>
+              }
+            }
+            <small class="text-muted" id="fechaFinHelper">
+              @if (fechaMinimaFin) {
+                Fecha mínima: {{ fechaMinimaFin | date:'dd/MM/yyyy' }}
+              } @else {
+                Seleccione primero la fecha de inicio
+              }
+            </small>
+          </div>
+
+          <!-- Observaciones -->
           <div class="col-md-12">
-            <label class="form-label">Teléfono</label>
-            <input type="text" class="form-control" formControlName="telefono"
-                   placeholder="Teléfono de contacto">
+            <label class="form-label fw-semibold">Observaciones</label>
+            <textarea class="form-control shadow-sm" formControlName="observaciones" rows="3"
+                      placeholder="Observaciones adicionales sobre el área..."
+                      [class.is-invalid]="areaForm.get('observaciones')?.invalid && areaForm.get('observaciones')?.touched">
+            </textarea>
+            @if (areaForm.get('observaciones')?.invalid && areaForm.get('observaciones')?.touched) {
+              <div class="invalid-feedback">Máximo 500 caracteres</div>
+            }
           </div>
         </div>
 
-        <!-- Botones -->
-        <div class="mt-4 d-flex gap-2">
-          <button type="submit" class="btn btn-primary" [disabled]="submitting()">
-            @if (submitting()) {
-              <span class="spinner-border spinner-border-sm me-2"></span>
-            }
-            <i class="bi" [class.bi-save]="!submitting()"></i>
-            {{ isEditMode() ? 'Actualizar' : 'Guardar' }}
+        <!-- Botones de Acción -->
+        <div class="mt-4 d-flex gap-2 justify-content-end border-top pt-3">
+          <button type="button" class="btn btn-light border px-4" (click)="cancelar()">
+            <i class="bi bi-x-circle me-1"></i> Cancelar
           </button>
-          <button type="button" class="btn btn-secondary" (click)="cancelar()">
-            <i class="bi bi-x-circle"></i>
-            Cancelar
+          <button type="submit" class="btn btn-primary px-4 shadow-sm" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner-border spinner-border-sm me-2"></span> Guardando...
+            } @else {
+              <i class="bi bi-save-fill me-1"></i> {{ isEditMode() ? 'Actualizar Cambios' : 'Crear Área' }}
+            }
           </button>
         </div>
       </form>

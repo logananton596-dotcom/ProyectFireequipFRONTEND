@@ -1,4 +1,5 @@
-<div class="area-detail-container">
+<div class="areas-detail-container">
+  <!-- Botón Volver -->
   <div class="mb-3">
     <button class="btn btn-outline-secondary" (click)="volver()">
       <i class="bi bi-arrow-left"></i>
@@ -16,49 +17,165 @@
 
   @if (!loading() && area()) {
     <div class="card">
+      <!-- Header -->
       <div class="card-header bg-white d-flex justify-content-between align-items-center">
         <h4 class="card-title mb-0">
-          <i class="bi bi-building"></i>
-          {{ area()?.nombre }}
+          <i class="bi bi-building text-primary me-2"></i>
+          {{ formatearNombreArea(area()!.nombreArea) }}
         </h4>
         <div>
-          @if (isAdmin()) {
-            <button class="btn btn-primary me-2" (click)="editar()">
-              <i class="bi bi-pencil"></i>
-              Editar
-            </button>
-            <button class="btn btn-danger" (click)="eliminar()">
-              <i class="bi bi-trash"></i>
-              Eliminar
-            </button>
-          }
+          <button class="btn btn-primary me-2" (click)="editar()">
+            <i class="bi bi-pencil"></i>
+            Editar
+          </button>
+          <button class="btn btn-danger" (click)="eliminar()">
+            <i class="bi bi-trash"></i>
+            Eliminar
+          </button>
         </div>
       </div>
+
       <div class="card-body">
         <div class="row">
+          <!-- Columna Izquierda -->
           <div class="col-md-6">
             <table class="table table-borderless">
               <tr>
-                <th width="40%">ID:</th>
-                <td><strong>{{ area()?.id }}</strong></td>
+                <th width="40%">Nombre del Área:</th>
+                <td><strong>{{ formatearNombreArea(area()!.nombreArea) }}</strong></td>
               </tr>
               <tr>
-                <th>Nombre:</th>
-                <td>{{ area()?.nombre }}</td>
+                <th>Estado:</th>
+                <td>
+                  <span class="badge shadow-sm px-3 py-2 fw-bold" 
+                        [class]="getActivoBadgeClass(area()!.activo)">
+                    {{ area()!.activo ? 'ACTIVO' : 'INACTIVO' }}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <th>Encargado Principal:</th>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <span>{{ getBomberoDisplay(encargado1()) }}</span>
+                    @if (encargado1()) {
+                      <span class="badge" 
+                            [class]="getEstadoBomberoBadge(encargado1()!.estado)">
+                        {{ encargado1()!.estado }}
+                      </span>
+                    }
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th>Encargado Secundario:</th>
+                <td>
+                  @if (encargado2()) {
+                    <div class="d-flex align-items-center gap-2">
+                      <span>{{ getBomberoDisplay(encargado2()) }}</span>
+                      <span class="badge" 
+                            [class]="getEstadoBomberoBadge(encargado2()!.estado)">
+                        {{ encargado2()!.estado }}
+                      </span>
+                    </div>
+                  } @else {
+                    <span class="text-muted">No asignado</span>
+                  }
+                </td>
               </tr>
             </table>
           </div>
+
+          <!-- Columna Derecha -->
           <div class="col-md-6">
             <table class="table table-borderless">
               <tr>
-                <th width="40%">Encargado:</th>
-                <td>{{ area()?.encargado }}</td>
+                <th width="40%">Fecha de Inicio:</th>
+                <td>{{ formatFecha(area()!.fechaInicio) }}</td>
               </tr>
               <tr>
-                <th>Teléfono:</th>
-                <td>{{ area()?.telefono || 'N/A' }}</td>
+                <th>Fecha de Fin:</th>
+                <td>{{ formatFecha(area()!.fechaFin ?? undefined) }}</td>
+              </tr>
+              <tr>
+                <th>Observaciones:</th>
+                <td>
+                  @if (area()!.observaciones) {
+                    <div class="p-2 bg-light rounded" style="white-space: pre-wrap;">
+                      {{ area()!.observaciones }}
+                    </div>
+                  } @else {
+                    <span class="text-muted">Sin observaciones</span>
+                  }
+                </td>
               </tr>
             </table>
+          </div>
+        </div>
+
+        <!-- Información de los bomberos encargados (cards) -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <hr>
+            <h6 class="text-muted mb-3">
+              <i class="bi bi-person-badge me-2"></i>Detalle de Encargados
+            </h6>
+          </div>
+
+          <!-- Card Encargado Principal -->
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="card-title">
+                  <i class="bi bi-star-fill text-warning me-1"></i>
+                  Encargado Principal
+                </h6>
+                @if (encargado1()) {
+                  <p class="mb-1">
+                    <strong>Código:</strong> {{ encargado1()!.codigoCgbvp }}
+                  </p>
+                  <p class="mb-1">
+                    <strong>Nombre:</strong> {{ encargado1()!.nombre }} {{ encargado1()!.apellido }}
+                  </p>
+                  <p class="mb-1">
+                    <strong>Grado:</strong> {{ encargado1()!.grado }}
+                  </p>
+                  <p class="mb-0">
+                    <strong>Teléfono:</strong> {{ encargado1()!.telefono || 'N/A' }}
+                  </p>
+                } @else {
+                  <p class="text-muted mb-0">No asignado</p>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Encargado Secundario -->
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="card-title">
+                  <i class="bi bi-person text-info me-1"></i>
+                  Encargado Secundario
+                </h6>
+                @if (encargado2()) {
+                  <p class="mb-1">
+                    <strong>Código:</strong> {{ encargado2()!.codigoCgbvp }}
+                  </p>
+                  <p class="mb-1">
+                    <strong>Nombre:</strong> {{ encargado2()!.nombre }} {{ encargado2()!.apellido }}
+                  </p>
+                  <p class="mb-1">
+                    <strong>Grado:</strong> {{ encargado2()!.grado }}
+                  </p>
+                  <p class="mb-0">
+                    <strong>Teléfono:</strong> {{ encargado2()!.telefono || 'N/A' }}
+                  </p>
+                } @else {
+                  <p class="text-muted mb-0">No asignado</p>
+                }
+              </div>
+            </div>
           </div>
         </div>
       </div>

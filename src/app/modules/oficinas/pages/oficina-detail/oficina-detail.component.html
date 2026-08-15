@@ -1,0 +1,161 @@
+<div class="oficina-detail-container">
+  <!-- Botón Volver -->
+  <div class="mb-3">
+    <button class="btn btn-outline-secondary" (click)="volver()">
+      <i class="bi bi-arrow-left"></i>
+      Volver
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-2 small">Cargando información de la oficina...</p>
+    </div>
+  }
+
+  @if (!loading() && oficina()) {
+    <div class="card shadow-sm border-0">
+      <!-- Header -->
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h4 class="card-title mb-0 fw-bold text-dark">
+          <i class="bi bi-building text-primary me-2"></i>
+          {{ oficina()!.nombre }}
+          <span class="badge ms-2" [class]="getEstadoOficinaBadgeClass(oficina()!.activo)">
+            {{ formatearEstadoOficina(oficina()!.activo) }}
+          </span>
+        </h4>
+        <div>
+          <button class="btn btn-outline-warning me-2" (click)="cambiarEstado()">
+            <i class="bi" [class.bi-pause-circle]="oficina()!.activo" [class.bi-play-circle]="!oficina()!.activo"></i>
+            {{ oficina()!.activo ? 'Inactivar' : 'Activar' }}
+          </button>
+          <button class="btn btn-primary me-2" (click)="editar()">
+            <i class="bi bi-pencil"></i>
+            Editar
+          </button>
+          <button class="btn btn-danger" (click)="eliminar()">
+            <i class="bi bi-trash"></i>
+            Eliminar
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="row">
+          <!-- Columna Izquierda -->
+          <div class="col-md-6">
+            <h6 class="text-muted border-bottom pb-2 mb-3">
+              <i class="bi bi-tag me-2"></i>Identificación
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Código:</th>
+                <td><strong>{{ oficina()!.codigo }}</strong></td>
+              </tr>
+              <tr>
+                <th>Nombre:</th>
+                <td>{{ oficina()!.nombre }}</td>
+              </tr>
+              <tr>
+                <th>Descripción:</th>
+                <td>{{ oficina()!.descripcion || 'N/A' }}</td>
+              </tr>
+            </table>
+
+            <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">
+              <i class="bi bi-geo-alt me-2"></i>Ubicación Física
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Piso:</th>
+                <td>{{ oficina()!.piso || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Edificio:</th>
+                <td>{{ oficina()!.edificio || 'N/A' }}</td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Columna Derecha -->
+          <div class="col-md-6">
+            <h6 class="text-muted border-bottom pb-2 mb-3">
+              <i class="bi bi-person me-2"></i>Responsable
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Responsable:</th>
+                <td><strong>{{ getResponsableDisplay() }}</strong></td>
+              </tr>
+              <tr>
+                <th>Capacidad:</th>
+                <td>{{ oficina()!.capacidad ? (oficina()!.capacidad + ' personas') : 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Estado:</th>
+                <td>
+                  <span class="badge shadow-sm px-3 py-2 fw-bold" 
+                        [class]="getEstadoOficinaBadgeClass(oficina()!.activo)">
+                    {{ formatearEstadoOficina(oficina()!.activo) }}
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Observaciones -->
+        @if (oficina()!.observaciones) {
+          <div class="row mt-3">
+            <div class="col-12">
+              <hr>
+              <h6 class="text-muted mb-2"><i class="bi bi-chat me-2"></i>Observaciones</h6>
+              <div class="p-3 bg-light rounded">
+                {{ oficina()!.observaciones }}
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Información Adicional en Cards -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <hr>
+            <h6 class="text-muted mb-2"><i class="bi bi-grid me-2"></i>Resumen</h6>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">ID Oficina</small>
+                    <strong>#{{ oficina()!.id }}</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">Estado</small>
+                    <span class="badge" [class]="getEstadoOficinaBadgeClass(oficina()!.activo)">
+                      {{ formatearEstadoOficina(oficina()!.activo) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">Capacidad</small>
+                    <strong>{{ oficina()!.capacidad ? (oficina()!.capacidad + ' personas') : 'N/A' }}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

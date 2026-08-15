@@ -1,25 +1,36 @@
-.equipo-form-container {
-  max-width: 900px;
-  margin: 0 auto;
+.equipo-form-container .card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.card {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.form-label {
+.equipo-form-container .form-label {
   font-weight: 500;
-  margin-bottom: 5px;
+  color: #495057;
 }
 
-.form-control:focus,
-.form-select:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+.equipo-form-container .form-control:focus,
+.equipo-form-container .form-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
+.equipo-form-container .alert-danger {
+  background-color: #f8d7da;
+  border-left: 4px solid #dc3545;
+}
+
+.equipo-form-container .form-control:disabled {
+  background-color: #e9ecef;
+  opacity: 0.7;
 }
 
 @media (max-width: 768px) {
-  .equipo-form-container {
-    padding: 10px;
+  .equipo-form-container .card-header {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .equipo-form-container .row .col-md-4,
+  .equipo-form-container .row .col-md-6 {
+    margin-bottom: 0.5rem;
   }
 }

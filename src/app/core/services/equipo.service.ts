@@ -1,19 +1,14 @@
-import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment'; // Ajusta la ruta a tu environment
 import { ApiService } from './api.service';
-import { Equipo, TipoEquipo, EstadoEquipo } from '../models/equipo.model';
+import { Equipo } from '../models/equipo.model';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class EquipoService extends ApiService {
 
-  // ==========================================
-  //  MÉTODOS DE EQUIPOS
-  // ==========================================
-
+  // CRUD Principal
   getAll(): Observable<Equipo[]> {
     return this.get<Equipo[]>('equipos');
   }
@@ -22,12 +17,10 @@ export class EquipoService extends ApiService {
     return this.get<Equipo>(`equipos/${id}`);
   }
 
-  // Usamos Partial<Equipo> porque al crear no envías el 'id'
   create(data: Partial<Equipo>): Observable<Equipo> {
     return this.post<Equipo>('equipos', data);
   }
 
-  // Usamos Partial<Equipo> porque al editar puedes enviar solo los campos modificados
   update(id: number, data: Partial<Equipo>): Observable<Equipo> {
     return this.put<Equipo>(`equipos/${id}`, data);
   }
@@ -36,15 +29,16 @@ export class EquipoService extends ApiService {
     return this.delete<void>(`equipos/${id}`);
   }
 
-  // ==========================================
-  // SUB-RECURSOS ASOCIADOS
-  // ==========================================
-
-  getTipos(): Observable<TipoEquipo[]> {
-    return this.get<TipoEquipo[]>('tipos-equipo');
+  // Métodos adicionales
+  getByEstado(estado: string): Observable<Equipo[]> {
+    return this.get<Equipo[]>(`equipos/estado/${estado}`);
   }
 
-  getEstados(): Observable<EstadoEquipo[]> {
-    return this.get<EstadoEquipo[]>('estados-equipo');
+  getByArea(areaId: number): Observable<Equipo[]> {
+    return this.get<Equipo[]>(`equipos/area/${areaId}`);
+  }
+
+  getDisponibles(): Observable<Equipo[]> {
+    return this.get<Equipo[]>('equipos/disponibles');
   }
 }

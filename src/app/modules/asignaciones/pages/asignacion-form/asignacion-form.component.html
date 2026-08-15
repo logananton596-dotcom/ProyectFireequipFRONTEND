@@ -1,0 +1,247 @@
+<div class="asignacion-form-container">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+      <h4 class="card-title mb-0 fw-bold text-dark">
+        <i class="bi text-primary me-2" [class.bi-plus-circle]="!isEditMode()" [class.bi-pencil-square]="isEditMode()"></i>
+        {{ isEditMode() ? 'Editar Asignación' : 'Nueva Asignación' }}
+      </h4>
+    </div>
+    <div class="card-body p-4">
+      @if (loading()) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="text-muted mt-2 small">Cargando información de la asignación...</p>
+        </div>
+      }
+
+      <form [formGroup]="asignacionForm" (ngSubmit)="onSubmit()">
+        <div class="row g-4">
+
+          <!-- ============ RECURSO ============ -->
+          <div class="col-12">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-box me-2"></i>Recurso a Asignar</h6>
+          </div>
+
+          <!-- Tipo de Recurso -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Tipo de Recurso *</label>
+            <select class="form-select shadow-sm" formControlName="tipoRecurso"
+                    [class.is-invalid]="asignacionForm.get('tipoRecurso')?.invalid && asignacionForm.get('tipoRecurso')?.touched">
+              @for (tipo of tiposRecurso; track tipo) {
+                <option [value]="tipo">{{ tipo }}</option>
+              }
+            </select>
+            @if (asignacionForm.get('tipoRecurso')?.invalid && asignacionForm.get('tipoRecurso')?.touched) {
+              <div class="invalid-feedback">Seleccione el tipo de recurso</div>
+            }
+          </div>
+
+          <!-- Selector de Equipo -->
+          @if (tipoRecursoSeleccionado() === 'EQUIPO') {
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Equipo *</label>
+              <select class="form-select shadow-sm" formControlName="equipoId"
+                      [class.is-invalid]="asignacionForm.get('equipoId')?.invalid && asignacionForm.get('equipoId')?.touched">
+                <option value="" disabled>Seleccione un equipo...</option>
+                @for (equipo of equiposDisponibles; track equipo.id) {
+                  <option [value]="equipo.id">{{ getEquipoDisplay(equipo) }}</option>
+                }
+              </select>
+              @if (asignacionForm.get('equipoId')?.invalid && asignacionForm.get('equipoId')?.touched) {
+                <div class="invalid-feedback">Seleccione un equipo disponible</div>
+              }
+              @if (equiposDisponibles.length === 0) {
+                <small class="text-warning">No hay equipos disponibles para asignar</small>
+              }
+            </div>
+          }
+
+          <!-- Selector de EPP -->
+          @if (tipoRecursoSeleccionado() === 'EPP') {
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">EPP *</label>
+              <select class="form-select shadow-sm" formControlName="eppId"
+                      [class.is-invalid]="asignacionForm.get('eppId')?.invalid && asignacionForm.get('eppId')?.touched">
+                <option value="" disabled>Seleccione un EPP...</option>
+                @for (epp of eppsDisponibles; track epp.id) {
+                  <option [value]="epp.id">{{ getEppDisplay(epp) }}</option>
+                }
+              </select>
+              @if (asignacionForm.get('eppId')?.invalid && asignacionForm.get('eppId')?.touched) {
+                <div class="invalid-feedback">Seleccione un EPP disponible</div>
+              }
+              @if (eppsDisponibles.length === 0) {
+                <small class="text-warning">No hay EPP disponibles para asignar</small>
+              }
+            </div>
+          }
+
+          <!-- Selector de Bien -->
+          @if (tipoRecursoSeleccionado() === 'BIEN') {
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Bien *</label>
+              <select class="form-select shadow-sm" formControlName="bienId"
+                      [class.is-invalid]="asignacionForm.get('bienId')?.invalid && asignacionForm.get('bienId')?.touched">
+                <option value="" disabled>Seleccione un bien...</option>
+                @for (bien of bienesDisponibles; track bien.id) {
+                  <option [value]="bien.id">{{ getBienDisplay(bien) }}</option>
+                }
+              </select>
+              @if (asignacionForm.get('bienId')?.invalid && asignacionForm.get('bienId')?.touched) {
+                <div class="invalid-feedback">Seleccione un bien disponible</div>
+              }
+              @if (bienesDisponibles.length === 0) {
+                <small class="text-warning">No hay bienes disponibles para asignar</small>
+              }
+            </div>
+          }
+
+          <!-- ============ DESTINO ============ -->
+          <div class="col-12 mt-3">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-person me-2"></i>Destino</h6>
+          </div>
+
+          <!-- Tipo de Destino -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Tipo de Destino *</label>
+            <select class="form-select shadow-sm" formControlName="tipoDestino"
+                    [class.is-invalid]="asignacionForm.get('tipoDestino')?.invalid && asignacionForm.get('tipoDestino')?.touched">
+              @for (tipo of tiposDestino; track tipo) {
+                <option [value]="tipo">{{ tipo }}</option>
+              }
+            </select>
+            @if (asignacionForm.get('tipoDestino')?.invalid && asignacionForm.get('tipoDestino')?.touched) {
+              <div class="invalid-feedback">Seleccione el tipo de destino</div>
+            }
+          </div>
+
+          <!-- Selector de Bombero -->
+          @if (tipoDestinoSeleccionado() === 'BOMBERO') {
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Bombero *</label>
+              <select class="form-select shadow-sm" formControlName="bomberoId"
+                      [class.is-invalid]="asignacionForm.get('bomberoId')?.invalid && asignacionForm.get('bomberoId')?.touched">
+                <option value="" disabled>Seleccione un bombero...</option>
+                @for (bombero of bomberosActivos; track bombero.id) {
+                  <option [value]="bombero.id">{{ getBomberoDisplay(bombero) }}</option>
+                }
+              </select>
+              @if (asignacionForm.get('bomberoId')?.invalid && asignacionForm.get('bomberoId')?.touched) {
+                <div class="invalid-feedback">Seleccione un bombero</div>
+              }
+              @if (bomberosActivos.length === 0) {
+                <small class="text-warning">No hay bomberos activos disponibles</small>
+              }
+            </div>
+          }
+
+          <!-- Selector de Vehículo -->
+          @if (tipoDestinoSeleccionado() === 'VEHICULO') {
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Vehículo *</label>
+              <select class="form-select shadow-sm" formControlName="vehiculoId"
+                      [class.is-invalid]="asignacionForm.get('vehiculoId')?.invalid && asignacionForm.get('vehiculoId')?.touched">
+                <option value="" disabled>Seleccione un vehículo...</option>
+                @for (vehiculo of vehiculosActivos; track vehiculo.id) {
+                  <option [value]="vehiculo.id">{{ getVehiculoDisplay(vehiculo) }}</option>
+                }
+              </select>
+              @if (asignacionForm.get('vehiculoId')?.invalid && asignacionForm.get('vehiculoId')?.touched) {
+                <div class="invalid-feedback">Seleccione un vehículo</div>
+              }
+              @if (vehiculosActivos.length === 0) {
+                <small class="text-warning">No hay vehículos activos disponibles</small>
+              }
+            </div>
+
+            <!-- Selector de Compartimiento (solo cuando hay vehículo) -->
+            @if (vehiculoSeleccionado()) {
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Compartimiento</label>
+                <select class="form-select shadow-sm" formControlName="compartimientoId">
+                  <option [value]="null">Sin compartimiento</option>
+                  @for (compartimiento of compartimientos; track compartimiento.id) {
+                    <option [value]="compartimiento.id">{{ getCompartimientoDisplay(compartimiento) }}</option>
+                  }
+                </select>
+                <small class="text-muted">Opcional - Seleccione un compartimiento específico</small>
+                @if (compartimientos.length === 0) {
+                  <small class="text-warning">Este vehículo no tiene compartimientos</small>
+                }
+              </div>
+            }
+          }
+
+          <!-- Selector de Ubicación -->
+          @if (tipoDestinoSeleccionado() === 'UBICACION') {
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Ubicación *</label>
+              <select class="form-select shadow-sm" formControlName="ubicacionId"
+                      [class.is-invalid]="asignacionForm.get('ubicacionId')?.invalid && asignacionForm.get('ubicacionId')?.touched">
+                <option value="" disabled>Seleccione una ubicación...</option>
+                @for (ubicacion of ubicacionesActivas; track ubicacion.id) {
+                  <option [value]="ubicacion.id">{{ getUbicacionDisplay(ubicacion) }}</option>
+                }
+              </select>
+              @if (asignacionForm.get('ubicacionId')?.invalid && asignacionForm.get('ubicacionId')?.touched) {
+                <div class="invalid-feedback">Seleccione una ubicación</div>
+              }
+              @if (ubicacionesActivas.length === 0) {
+                <small class="text-warning">No hay ubicaciones activas disponibles</small>
+              }
+            </div>
+          }
+
+          <!-- ============ FECHAS ============ -->
+          <div class="col-12 mt-3">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-calendar me-2"></i>Fechas</h6>
+          </div>
+
+          <!-- Fecha Asignación -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Fecha de Asignación *</label>
+            <input type="date" class="form-control shadow-sm" formControlName="fechaAsignacion"
+                   [class.is-invalid]="asignacionForm.get('fechaAsignacion')?.invalid && asignacionForm.get('fechaAsignacion')?.touched">
+            @if (asignacionForm.get('fechaAsignacion')?.invalid && asignacionForm.get('fechaAsignacion')?.touched) {
+              <div class="invalid-feedback">La fecha de asignación es requerida</div>
+            }
+          </div>
+
+          <!-- Fecha Fin -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Fecha Fin (Opcional)</label>
+            <input type="date" class="form-control shadow-sm" formControlName="fechaFin">
+            <small class="text-muted">Si se establece, la asignación vencerá automáticamente</small>
+          </div>
+
+          <!-- ============ OBSERVACIONES ============ -->
+          <div class="col-12 mt-3">
+            <label class="form-label fw-semibold">Observaciones</label>
+            <textarea class="form-control shadow-sm" formControlName="observaciones" rows="3"
+                      placeholder="Observaciones adicionales sobre la asignación..."
+                      maxlength="500">
+            </textarea>
+            <small class="text-muted">Máximo 500 caracteres</small>
+          </div>
+
+        </div>
+
+        <!-- Botones -->
+        <div class="mt-4 d-flex gap-2 justify-content-end border-top pt-3">
+          <button type="button" class="btn btn-light border px-4" (click)="cancelar()">
+            <i class="bi bi-x-circle me-1"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary px-4 shadow-sm" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner-border spinner-border-sm me-2"></span> Guardando...
+            } @else {
+              <i class="bi bi-save-fill me-1"></i> {{ isEditMode() ? 'Actualizar Cambios' : 'Crear Asignación' }}
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

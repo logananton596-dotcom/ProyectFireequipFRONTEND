@@ -25,7 +25,7 @@
               <option [value]="null">Seleccione un equipo...</option>
               @for (equipo of equipos(); track equipo.id) {
                 <option [value]="equipo.id">
-                  {{ equipo.codigoInterno }} - {{ equipo.nombre }}
+                  {{ equipo.codigoCgbvp}} - {{ equipo.nombreEquipo }}
                 </option>
               }
             </select>

@@ -1,0 +1,241 @@
+<div class="vehiculo-form-container">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+      <h4 class="card-title mb-0 fw-bold text-dark">
+        <i class="bi text-primary me-2" [class.bi-plus-circle]="!isEditMode()" [class.bi-pencil-square]="isEditMode()"></i>
+        {{ isEditMode() ? 'Editar Vehículo' : 'Nuevo Vehículo' }}
+      </h4>
+    </div>
+    <div class="card-body p-4">
+      @if (loading()) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="text-muted mt-2 small">Cargando información del vehículo...</p>
+        </div>
+      }
+
+      <form [formGroup]="vehiculoForm" (ngSubmit)="onSubmit()">
+        <div class="row g-4">
+
+          <!-- ============ DATOS PRINCIPALES ============ -->
+          <div class="col-12">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-truck me-2"></i>Datos Principales</h6>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Código *</label>
+            <input type="text" class="form-control shadow-sm" formControlName="codigo"
+                   placeholder="Ej: VEH-001"
+                   [class.is-invalid]="vehiculoForm.get('codigo')?.invalid && vehiculoForm.get('codigo')?.touched">
+            @if (vehiculoForm.get('codigo')?.invalid && vehiculoForm.get('codigo')?.touched) {
+              <div class="invalid-feedback">El código es requerido (máx. 20 caracteres)</div>
+            }
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Nombre Vehículo *</label>
+            <select class="form-select shadow-sm" formControlName="nombreVehiculo"
+                    [class.is-invalid]="vehiculoForm.get('nombreVehiculo')?.invalid && vehiculoForm.get('nombreVehiculo')?.touched">
+              <option value="" disabled>Seleccione nombre...</option>
+              @for (nombre of nombresVehiculo; track nombre) {
+                <option [value]="nombre">{{ formatearNombreVehiculo(nombre) }}</option>
+              }
+            </select>
+            @if (vehiculoForm.get('nombreVehiculo')?.invalid && vehiculoForm.get('nombreVehiculo')?.touched) {
+              <div class="invalid-feedback">El nombre del vehículo es requerido</div>
+            }
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Placa *</label>
+            <input type="text" class="form-control shadow-sm" formControlName="placa"
+                   placeholder="Ej: ABC-123"
+                   [class.is-invalid]="vehiculoForm.get('placa')?.invalid && vehiculoForm.get('placa')?.touched">
+            @if (vehiculoForm.get('placa')?.invalid && vehiculoForm.get('placa')?.touched) {
+              <div class="invalid-feedback">La placa es requerida (máx. 15 caracteres)</div>
+            }
+          </div>
+
+          <!-- ============ CLASIFICACIÓN ============ -->
+          <div class="col-12 mt-3">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-tags me-2"></i>Clasificación</h6>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Marca *</label>
+            <select class="form-select shadow-sm" formControlName="marca"
+                    [class.is-invalid]="vehiculoForm.get('marca')?.invalid && vehiculoForm.get('marca')?.touched">
+              <option value="" disabled>Seleccione marca...</option>
+              @for (marca of marcasVehiculo; track marca) {
+                <option [value]="marca">{{ formatearMarcaVehiculo(marca) }}</option>
+              }
+            </select>
+            @if (vehiculoForm.get('marca')?.invalid && vehiculoForm.get('marca')?.touched) {
+              <div class="invalid-feedback">La marca es requerida</div>
+            }
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Tipo Vehículo *</label>
+            <select class="form-select shadow-sm" formControlName="tipoVehiculo"
+                    [class.is-invalid]="vehiculoForm.get('tipoVehiculo')?.invalid && vehiculoForm.get('tipoVehiculo')?.touched">
+              <option value="" disabled>Seleccione tipo...</option>
+              @for (tipo of tiposVehiculo; track tipo) {
+                <option [value]="tipo">{{ formatearTipoVehiculo(tipo) }}</option>
+              }
+            </select>
+            @if (vehiculoForm.get('tipoVehiculo')?.invalid && vehiculoForm.get('tipoVehiculo')?.touched) {
+              <div class="invalid-feedback">El tipo de vehículo es requerido</div>
+            }
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Estado *</label>
+            <select class="form-select shadow-sm" formControlName="estado"
+                    [class.is-invalid]="vehiculoForm.get('estado')?.invalid && vehiculoForm.get('estado')?.touched">
+              @for (estado of estadosVehiculo; track estado) {
+                <option [value]="estado">{{ formatearEstadoVehiculo(estado) }}</option>
+              }
+            </select>
+            @if (vehiculoForm.get('estado')?.invalid && vehiculoForm.get('estado')?.touched) {
+              <div class="invalid-feedback">El estado es requerido</div>
+            }
+          </div>
+
+          <!-- ============ DATOS TÉCNICOS ============ -->
+          <div class="col-12 mt-3">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-gear me-2"></i>Datos Técnicos</h6>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Modelo</label>
+            <input type="text" class="form-control shadow-sm" formControlName="modelo"
+                   placeholder="Ej: F-350"
+                   [class.is-invalid]="vehiculoForm.get('modelo')?.invalid && vehiculoForm.get('modelo')?.touched">
+            @if (vehiculoForm.get('modelo')?.invalid && vehiculoForm.get('modelo')?.touched) {
+              <div class="invalid-feedback">Máx. 80 caracteres</div>
+            }
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Año</label>
+            <input type="number" class="form-control shadow-sm" formControlName="anio"
+                   placeholder="Ej: 2024"
+                   [class.is-invalid]="vehiculoForm.get('anio')?.invalid && vehiculoForm.get('anio')?.touched">
+            @if (vehiculoForm.get('anio')?.invalid && vehiculoForm.get('anio')?.touched) {
+              <div class="invalid-feedback">Año inválido</div>
+            }
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Número Motor</label>
+            <input type="text" class="form-control shadow-sm" formControlName="numeroMotor"
+                   placeholder="Ej: MOT-001"
+                   [class.is-invalid]="vehiculoForm.get('numeroMotor')?.invalid && vehiculoForm.get('numeroMotor')?.touched">
+            @if (vehiculoForm.get('numeroMotor')?.invalid && vehiculoForm.get('numeroMotor')?.touched) {
+              <div class="invalid-feedback">Máx. 30 caracteres</div>
+            }
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Número Chasis</label>
+            <input type="text" class="form-control shadow-sm" formControlName="numeroChasis"
+                   placeholder="Ej: CHA-001"
+                   [class.is-invalid]="vehiculoForm.get('numeroChasis')?.invalid && vehiculoForm.get('numeroChasis')?.touched">
+            @if (vehiculoForm.get('numeroChasis')?.invalid && vehiculoForm.get('numeroChasis')?.touched) {
+              <div class="invalid-feedback">Máx. 30 caracteres</div>
+            }
+          </div>
+
+          <!-- ============ CAPACIDADES ============ -->
+          <div class="col-12 mt-3">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-droplet me-2"></i>Capacidades</h6>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Capacidad Agua (litros)</label>
+            <input type="number" class="form-control shadow-sm" formControlName="capacidadAgua"
+                   placeholder="Ej: 500"
+                   min="0"
+                   [class.is-invalid]="vehiculoForm.get('capacidadAgua')?.invalid && vehiculoForm.get('capacidadAgua')?.touched">
+            @if (vehiculoForm.get('capacidadAgua')?.invalid && vehiculoForm.get('capacidadAgua')?.touched) {
+              <div class="invalid-feedback">Debe ser mayor o igual a 0</div>
+            }
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Capacidad Espuma (litros)</label>
+            <input type="number" class="form-control shadow-sm" formControlName="capacidadEspuma"
+                   placeholder="Ej: 200"
+                   min="0"
+                   [class.is-invalid]="vehiculoForm.get('capacidadEspuma')?.invalid && vehiculoForm.get('capacidadEspuma')?.touched">
+            @if (vehiculoForm.get('capacidadEspuma')?.invalid && vehiculoForm.get('capacidadEspuma')?.touched) {
+              <div class="invalid-feedback">Debe ser mayor o igual a 0</div>
+            }
+          </div>
+
+          <!-- ============ UBICACIÓN ============ -->
+          <div class="col-12 mt-3">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-geo-alt me-2"></i>Ubicación</h6>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Ubicación *</label>
+            <select class="form-select shadow-sm" formControlName="nombreUbicacion"
+                    [class.is-invalid]="vehiculoForm.get('nombreUbicacion')?.invalid && vehiculoForm.get('nombreUbicacion')?.touched">
+              <option value="" disabled>Seleccione ubicación...</option>
+              @for (ubicacion of nombresUbicacion; track ubicacion) {
+                <option [value]="ubicacion">{{ ubicacion }}</option>
+              }
+            </select>
+            @if (vehiculoForm.get('nombreUbicacion')?.invalid && vehiculoForm.get('nombreUbicacion')?.touched) {
+              <div class="invalid-feedback">La ubicación es requerida</div>
+            }
+          </div>
+
+          <!-- ============ INFORMACIÓN ADICIONAL ============ -->
+          <div class="col-12 mt-3">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-info-circle me-2"></i>Información Adicional</h6>
+          </div>
+
+          <div class="col-md-12">
+            <label class="form-label fw-semibold">Observación</label>
+            <textarea class="form-control shadow-sm" formControlName="observacion" rows="3"
+                      placeholder="Observaciones adicionales sobre el vehículo..."
+                      [class.is-invalid]="vehiculoForm.get('observacion')?.invalid && vehiculoForm.get('observacion')?.touched">
+            </textarea>
+            @if (vehiculoForm.get('observacion')?.invalid && vehiculoForm.get('observacion')?.touched) {
+              <div class="invalid-feedback">Máx. 500 caracteres</div>
+            }
+          </div>
+
+          <!-- Estado Activo -->
+          <div class="col-12 mt-2">
+            <div class="form-check form-switch bg-light border rounded px-4 py-2">
+              <input type="checkbox" class="form-check-input" formControlName="activo" id="activo" role="switch">
+              <label class="form-check-label fw-semibold" for="activo">
+                Vehículo Activo
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="mt-4 d-flex gap-2 justify-content-end border-top pt-3">
+          <button type="button" class="btn btn-light border px-4" (click)="cancelar()">
+            <i class="bi bi-x-circle me-1"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary px-4 shadow-sm" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner-border spinner-border-sm me-2"></span> Guardando...
+            } @else {
+              <i class="bi bi-save-fill me-1"></i> {{ isEditMode() ? 'Actualizar Cambios' : 'Crear Vehículo' }}
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

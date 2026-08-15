@@ -1,28 +1,35 @@
-.equipos-container {
-  padding: 20px;
+.equipo-container .card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.table th {
+.equipo-container .table thead th {
+  background-color: #f8f9fa;
   font-weight: 600;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: #495057;
+  border-bottom: 2px solid #e9ecef;
 }
 
-.table td {
-  vertical-align: middle;
+.equipo-container .table tbody tr:hover {
+  background-color: #f8f9fa;
 }
 
-.btn-group .btn {
-  padding: 0.25rem 0.5rem;
+.equipo-container .badge {
+  font-weight: 500;
+  letter-spacing: 0.3px;
 }
 
-.badge {
-  padding: 0.4rem 0.7rem;
+.equipo-container .btn-group .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 @media (max-width: 768px) {
-  .equipos-container {
-    padding: 10px;
+  .equipo-container .table-responsive {
+    font-size: 0.85rem;
+  }
+  .equipo-container .btn-group .btn {
+    padding: 0.2rem 0.35rem;
+    font-size: 0.8rem;
   }
 }

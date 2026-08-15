@@ -1,18 +1,77 @@
-.area-form-container {
-  max-width: 700px;
-  margin: 0 auto;
+.areas-form-container .card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.card {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+.areas-form-container .card-header {
+  border-bottom: 1px solid #e9ecef;
+  padding: 1.25rem 1.5rem;
 }
 
-.form-label {
+.areas-form-container .card-header .card-title {
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.areas-form-container .form-label {
   font-weight: 500;
-  margin-bottom: 5px;
+  color: #495057;
 }
 
-.form-control:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+.areas-form-container .form-control:focus,
+.areas-form-container .form-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
+.areas-form-container .form-check-input:checked {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.areas-form-container .list-group-item {
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.areas-form-container .list-group-item:hover {
+  background-color: #e9ecef;
+}
+
+.areas-form-container .list-group-item:last-child {
+  border-bottom: none;
+}
+
+.areas-form-container .list-group {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.areas-form-container .text-success {
+  font-size: 0.9rem;
+}
+
+.areas-form-container .btn-primary {
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+}
+
+.areas-form-container .btn-primary:disabled {
+  opacity: 0.65;
+}
+
+@media (max-width: 768px) {
+  .areas-form-container .card-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch !important;
+  }
+
+  .areas-form-container .row .col-md-6 {
+    margin-bottom: 0.5rem;
+  }
 }

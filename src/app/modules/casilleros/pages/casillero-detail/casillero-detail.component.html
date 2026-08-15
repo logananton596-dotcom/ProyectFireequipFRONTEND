@@ -1,0 +1,186 @@
+<div class="casillero-detail-container">
+  <!-- Botón Volver -->
+  <div class="mb-3">
+    <button class="btn btn-outline-secondary" (click)="volver()">
+      <i class="bi bi-arrow-left"></i>
+      Volver
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-2 small">Cargando información del casillero...</p>
+    </div>
+  }
+
+  @if (!loading() && casillero()) {
+    <div class="card shadow-sm border-0">
+      <!-- Header -->
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h4 class="card-title mb-0 fw-bold text-dark">
+          <i class="bi bi-lock text-primary me-2"></i>
+          Casillero {{ casillero()!.numero }}
+          <span class="badge ms-2" [class]="getEstadoCasilleroBadgeClass(casillero()!.activo)">
+            {{ formatearEstadoCasillero(casillero()!.activo) }}
+          </span>
+          <span class="badge ms-2" [class]="getAsignacionBadgeClass(casillero()!.bomberoId)">
+            {{ formatearAsignacion(casillero()!.bomberoId) }}
+          </span>
+        </h4>
+        <div>
+          @if (casillero()!.bomberoId) {
+            <button class="btn btn-outline-warning me-2" (click)="liberar()">
+              <i class="bi bi-person-x me-1"></i> Liberar
+            </button>
+          }
+          <button class="btn btn-outline-warning me-2" (click)="cambiarEstado()">
+            <i class="bi" [class.bi-pause-circle]="casillero()!.activo" [class.bi-play-circle]="!casillero()!.activo"></i>
+            {{ casillero()!.activo ? 'Inactivar' : 'Activar' }}
+          </button>
+          <button class="btn btn-primary me-2" (click)="editar()">
+            <i class="bi bi-pencil"></i>
+            Editar
+          </button>
+          <button class="btn btn-danger" (click)="eliminar()">
+            <i class="bi bi-trash"></i>
+            Eliminar
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="row">
+          <!-- Columna Izquierda -->
+          <div class="col-md-6">
+            <h6 class="text-muted border-bottom pb-2 mb-3">
+              <i class="bi bi-tag me-2"></i>Identificación
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Código:</th>
+                <td><strong>{{ casillero()!.codigo }}</strong></td>
+              </tr>
+              <tr>
+                <th>Número:</th>
+                <td><strong>{{ casillero()!.numero }}</strong></td>
+              </tr>
+              <tr>
+                <th>Descripción:</th>
+                <td>{{ casillero()!.descripcion || 'N/A' }}</td>
+              </tr>
+            </table>
+
+            <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">
+              <i class="bi bi-geo-alt me-2"></i>Ubicación Física
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Piso:</th>
+                <td>{{ casillero()!.piso || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Edificio:</th>
+                <td>{{ casillero()!.edificio || 'N/A' }}</td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Columna Derecha -->
+          <div class="col-md-6">
+            <h6 class="text-muted border-bottom pb-2 mb-3">
+              <i class="bi bi-person me-2"></i>Asignación
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Bombero:</th>
+                <td>
+                  @if (casillero()!.bomberoId) {
+                    <strong>{{ getBomberoDisplay() }}</strong>
+                  } @else {
+                    <span class="text-muted">Sin asignar</span>
+                  }
+                </td>
+              </tr>
+              <tr>
+                <th>Capacidad:</th>
+                <td>{{ casillero()!.capacidad ? (casillero()!.capacidad + ' unidades') : 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Estado:</th>
+                <td>
+                  <span class="badge shadow-sm px-3 py-2 fw-bold" 
+                        [class]="getEstadoCasilleroBadgeClass(casillero()!.activo)">
+                    {{ formatearEstadoCasillero(casillero()!.activo) }}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <th>Asignación:</th>
+                <td>
+                  <span class="badge shadow-sm px-3 py-2 fw-bold" 
+                        [class]="getAsignacionBadgeClass(casillero()!.bomberoId)">
+                    {{ formatearAsignacion(casillero()!.bomberoId) }}
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Observaciones -->
+        @if (casillero()!.observaciones) {
+          <div class="row mt-3">
+            <div class="col-12">
+              <hr>
+              <h6 class="text-muted mb-2"><i class="bi bi-chat me-2"></i>Observaciones</h6>
+              <div class="p-3 bg-light rounded">
+                {{ casillero()!.observaciones }}
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Información Adicional en Cards -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <hr>
+            <h6 class="text-muted mb-2"><i class="bi bi-grid me-2"></i>Resumen</h6>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">ID Casillero</small>
+                    <strong>#{{ casillero()!.id }}</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">Estado</small>
+                    <span class="badge" [class]="getEstadoCasilleroBadgeClass(casillero()!.activo)">
+                      {{ formatearEstadoCasillero(casillero()!.activo) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">Asignación</small>
+                    <span class="badge" [class]="getAsignacionBadgeClass(casillero()!.bomberoId)">
+                      {{ formatearAsignacion(casillero()!.bomberoId) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

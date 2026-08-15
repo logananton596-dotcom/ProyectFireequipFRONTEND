@@ -1,0 +1,35 @@
+.epp-container .card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.epp-container .table thead th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.epp-container .table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.epp-container .badge {
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.epp-container .btn-group .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .epp-container .table-responsive {
+    font-size: 0.85rem;
+  }
+  .epp-container .btn-group .btn {
+    padding: 0.2rem 0.35rem;
+    font-size: 0.8rem;
+  }
+}
