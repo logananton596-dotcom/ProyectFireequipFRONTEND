@@ -1,0 +1,102 @@
+<div class="ubicacion-form-container">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+      <h4 class="card-title mb-0 fw-bold text-dark">
+        <i class="bi text-primary me-2" [class.bi-plus-circle]="!isEditMode()" [class.bi-pencil-square]="isEditMode()"></i>
+        {{ isEditMode() ? 'Editar Ubicación' : 'Nueva Ubicación' }}
+      </h4>
+    </div>
+    <div class="card-body p-4">
+      @if (loading()) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="text-muted mt-2 small">Cargando información de la ubicación...</p>
+        </div>
+      }
+
+      <form [formGroup]="ubicacionForm" (ngSubmit)="onSubmit()">
+        <div class="row g-4">
+
+          <!-- Código -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Código *</label>
+            <input type="text" class="form-control shadow-sm" formControlName="codigo"
+                   placeholder="Ej: UB-001"
+                   [class.is-invalid]="ubicacionForm.get('codigo')?.invalid && ubicacionForm.get('codigo')?.touched">
+            @if (ubicacionForm.get('codigo')?.invalid && ubicacionForm.get('codigo')?.touched) {
+              <div class="invalid-feedback">El código es requerido</div>
+            }
+          </div>
+
+          <!-- Nombre Ubicación -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Nombre *</label>
+            <select class="form-select shadow-sm" formControlName="nombreUbicacion"
+                    [class.is-invalid]="ubicacionForm.get('nombreUbicacion')?.invalid && ubicacionForm.get('nombreUbicacion')?.touched">
+              <option value="" disabled>Seleccione una ubicación...</option>
+              @for (nombre of nombresUbicacion; track nombre) {
+                <option [value]="nombre">{{ formatearNombreUbicacion(nombre) }}</option>
+              }
+            </select>
+            @if (ubicacionForm.get('nombreUbicacion')?.invalid && ubicacionForm.get('nombreUbicacion')?.touched) {
+              <div class="invalid-feedback">El nombre es requerido</div>
+            }
+          </div>
+
+          <!-- Estado -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Estado *</label>
+            <select class="form-select shadow-sm" formControlName="estado"
+                    [class.is-invalid]="ubicacionForm.get('estado')?.invalid && ubicacionForm.get('estado')?.touched">
+              @for (estado of estadosUbicacion; track estado) {
+                <option [value]="estado">{{ estado }}</option>
+              }
+            </select>
+            @if (ubicacionForm.get('estado')?.invalid && ubicacionForm.get('estado')?.touched) {
+              <div class="invalid-feedback">El estado es requerido</div>
+            }
+          </div>
+
+          <!-- Activa -->
+          <div class="col-md-6 d-flex align-items-end pb-1">
+            <div class="form-check form-switch bg-light border rounded px-4 py-2 w-100 shadow-sm">
+              <input type="checkbox" class="form-check-input ms-0 me-2" formControlName="activa"
+                     id="activa" role="switch">
+              <label class="form-check-label fw-semibold text-dark" for="activa">
+                Ubicación Activa
+              </label>
+            </div>
+          </div>
+
+          <!-- Observación -->
+          <div class="col-12">
+            <label class="form-label fw-semibold">Observación</label>
+            <textarea class="form-control shadow-sm" formControlName="observacion" rows="3"
+                      placeholder="Observaciones adicionales sobre la ubicación..."
+                      [class.is-invalid]="ubicacionForm.get('observacion')?.invalid && ubicacionForm.get('observacion')?.touched">
+            </textarea>
+            @if (ubicacionForm.get('observacion')?.invalid && ubicacionForm.get('observacion')?.touched) {
+              <div class="invalid-feedback">Máximo 300 caracteres</div>
+            }
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="mt-4 d-flex gap-2 justify-content-end border-top pt-3">
+          <button type="button" class="btn btn-light border px-4" (click)="cancelar()">
+            <i class="bi bi-x-circle me-1"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary px-4 shadow-sm" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner-border spinner-border-sm me-2"></span> Guardando...
+            } @else {
+              <i class="bi bi-save-fill me-1"></i> {{ isEditMode() ? 'Actualizar Cambios' : 'Crear Ubicación' }}
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

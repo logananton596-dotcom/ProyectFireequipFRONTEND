@@ -1,0 +1,41 @@
+<aside class="sidebar" [class.collapsed]="collapsed">
+  <nav class="sidebar-nav">
+    
+    @for (category of filteredMenuCategories(); track category.title) {
+      <div class="menu-category-group" [class.is-collapsed]="!isCategoryOpen(category.title)">
+        
+        <!-- Título Clickeable / Desplegable -->
+        @if (!collapsed) {
+          <div class="category-header" (click)="toggleCategory(category.title)">
+            <span class="category-title">{{ category.title | uppercase }}</span>
+            <!-- Flecha dinámica -->
+            <i class="bi dropdown-arrow" 
+               [class.bi-chevron-down]="isCategoryOpen(category.title)" 
+               [class.bi-chevron-right]="!isCategoryOpen(category.title)">
+            </i>
+          </div>
+        } @else {
+          <hr class="category-divider" />
+        }
+
+        <!-- Contenedor animable de la lista -->
+        <ul class="nav flex-column category-content" [class.show]="isCategoryOpen(category.title)">
+          @for (item of category.items; track item.path) {
+            <li class="nav-item">
+              <a class="nav-link" 
+                 [routerLink]="item.path" 
+                 [routerLinkActiveOptions]="{exact: false}"
+                 routerLinkActive="active"
+                 [title]="collapsed ? item.label : ''">
+                <i [class]="item.icon"></i>
+                <span class="nav-label">{{ item.label }}</span>
+              </a>
+            </li>
+          }
+        </ul>
+
+      </div>
+    }
+
+  </nav>
+</aside>

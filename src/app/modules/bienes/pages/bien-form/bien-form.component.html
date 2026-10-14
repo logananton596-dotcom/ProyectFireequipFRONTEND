@@ -1,0 +1,237 @@
+<div class="bien-form-container">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+      <h4 class="card-title mb-0 fw-bold text-dark">
+        <i class="bi text-primary me-2" [class.bi-plus-circle]="!isEditMode()" [class.bi-pencil-square]="isEditMode()"></i>
+        {{ isEditMode() ? 'Editar Bien' : 'Nuevo Bien' }}
+      </h4>
+    </div>
+    <div class="card-body p-4">
+      @if (loading()) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="text-muted mt-2 small">Cargando información del bien...</p>
+        </div>
+      }
+
+      <form [formGroup]="bienForm" (ngSubmit)="onSubmit()">
+        <div class="row g-4">
+
+          <!-- ============ IDENTIFICACIÓN ============ -->
+          <div class="col-12">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-tag me-2"></i>Identificación</h6>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Código CGBVP *</label>
+            <input type="text" class="form-control shadow-sm" formControlName="codigoCgbvp"
+                   placeholder="Ej: B-001"
+                   [class.is-invalid]="bienForm.get('codigoCgbvp')?.invalid && bienForm.get('codigoCgbvp')?.touched">
+            @if (bienForm.get('codigoCgbvp')?.invalid && bienForm.get('codigoCgbvp')?.touched) {
+              <div class="invalid-feedback">El código es requerido (máx. 30 caracteres)</div>
+            }
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Nombre *</label>
+            <input type="text" class="form-control shadow-sm" formControlName="nombre"
+                   placeholder="Ej: Computadora HP"
+                   [class.is-invalid]="bienForm.get('nombre')?.invalid && bienForm.get('nombre')?.touched">
+            @if (bienForm.get('nombre')?.invalid && bienForm.get('nombre')?.touched) {
+              <div class="invalid-feedback">El nombre es requerido (máx. 100 caracteres)</div>
+            }
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Tipo de Bien *</label>
+            <select class="form-select shadow-sm" formControlName="tipoBien"
+                    [class.is-invalid]="bienForm.get('tipoBien')?.invalid && bienForm.get('tipoBien')?.touched">
+              <option value="" disabled>Seleccione tipo...</option>
+              @for (tipo of tiposBien; track tipo) {
+                <option [value]="tipo">{{ formatearTipoBien(tipo) }}</option>
+              }
+            </select>
+            @if (bienForm.get('tipoBien')?.invalid && bienForm.get('tipoBien')?.touched) {
+              <div class="invalid-feedback">El tipo de bien es requerido</div>
+            }
+          </div>
+
+          <!-- ============ CARACTERÍSTICAS ============ -->
+          <div class="col-12 mt-3">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-gear me-2"></i>Características</h6>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Marca</label>
+            <input type="text" class="form-control shadow-sm" formControlName="marca"
+                   placeholder="Ej: HP, Dell"
+                   [class.is-invalid]="bienForm.get('marca')?.invalid && bienForm.get('marca')?.touched">
+            @if (bienForm.get('marca')?.invalid && bienForm.get('marca')?.touched) {
+              <div class="invalid-feedback">Máx. 80 caracteres</div>
+            }
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Modelo</label>
+            <input type="text" class="form-control shadow-sm" formControlName="modelo"
+                   placeholder="Ej: EliteBook 840"
+                   [class.is-invalid]="bienForm.get('modelo')?.invalid && bienForm.get('modelo')?.touched">
+            @if (bienForm.get('modelo')?.invalid && bienForm.get('modelo')?.touched) {
+              <div class="invalid-feedback">Máx. 80 caracteres</div>
+            }
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Número de Serie</label>
+            <input type="text" class="form-control shadow-sm" formControlName="numeroSerie"
+                   placeholder="Ej: SN-12345"
+                   [class.is-invalid]="bienForm.get('numeroSerie')?.invalid && bienForm.get('numeroSerie')?.touched">
+            @if (bienForm.get('numeroSerie')?.invalid && bienForm.get('numeroSerie')?.touched) {
+              <div class="invalid-feedback">Máx. 80 caracteres</div>
+            }
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Condición</label>
+            <select class="form-select shadow-sm" formControlName="condicion">
+              <option value="" disabled>Seleccione condición...</option>
+              @for (condicion of condicionesBien; track condicion) {
+                <option [value]="condicion">{{ formatearCondicionBien(condicion) }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- ============ ADQUISICIÓN ============ -->
+          <div class="col-12 mt-3">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-calendar-plus me-2"></i>Adquisición</h6>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Fecha de Adquisición *</label>
+            <input type="date" class="form-control shadow-sm" formControlName="fechaAdquisicion"
+                   [class.is-invalid]="bienForm.get('fechaAdquisicion')?.invalid && bienForm.get('fechaAdquisicion')?.touched">
+            @if (bienForm.get('fechaAdquisicion')?.invalid && bienForm.get('fechaAdquisicion')?.touched) {
+              <div class="invalid-feedback">La fecha de adquisición es requerida</div>
+            }
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Estado *</label>
+            <select class="form-select shadow-sm" formControlName="estado"
+                    [class.is-invalid]="bienForm.get('estado')?.invalid && bienForm.get('estado')?.touched">
+              <option value="" disabled>Seleccione estado...</option>
+              @for (estado of estadosBien; track estado) {
+                <option [value]="estado">{{ formatearEstadoBien(estado) }}</option>
+              }
+            </select>
+            @if (bienForm.get('estado')?.invalid && bienForm.get('estado')?.touched) {
+              <div class="invalid-feedback">El estado es requerido</div>
+            }
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Valor Referencial (S/.)</label>
+            <input type="number" class="form-control shadow-sm" formControlName="valorReferencial"
+                   placeholder="Ej: 2500.00"
+                   min="0"
+                   step="0.01"
+                   [class.is-invalid]="bienForm.get('valorReferencial')?.invalid && bienForm.get('valorReferencial')?.touched">
+            @if (bienForm.get('valorReferencial')?.invalid && bienForm.get('valorReferencial')?.touched) {
+              <div class="invalid-feedback">El valor debe ser mayor o igual a 0</div>
+            }
+          </div>
+
+          <!-- ============ PROPIEDAD Y UBICACIÓN ============ -->
+          <div class="col-12 mt-3">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-house me-2"></i>Propiedad y Ubicación</h6>
+          </div>
+
+            <!-- Área -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Área *</label>
+          <select class="form-select shadow-sm" formControlName="areaId"
+                  [class.is-invalid]="bienForm.get('areaId')?.invalid && bienForm.get('areaId')?.touched">
+            <option [ngValue]="null" disabled>Seleccione área...</option>
+            @for (area of areas(); track area.id) {
+              <option [ngValue]="area.id">{{ area.nombreArea }}</option>
+            }
+          </select>
+          @if (bienForm.get('areaId')?.invalid && bienForm.get('areaId')?.touched) {
+            <div class="invalid-feedback">El área es requerida</div>
+          }
+        </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Ubicación Física *</label>
+            <select class="form-select shadow-sm" formControlName="ubicacionId"
+                    [class.is-invalid]="bienForm.get('ubicacionId')?.invalid && bienForm.get('ubicacionId')?.touched">
+              <option value="" disabled>Seleccione ubicación...</option>
+              @for (ubicacion of ubicaciones(); track ubicacion.id) {
+                <option [value]="ubicacion.id">{{ getUbicacionDisplay(ubicacion) }}</option>
+              }
+            </select>
+            @if (bienForm.get('ubicacionId')?.invalid && bienForm.get('ubicacionId')?.touched) {
+              <div class="invalid-feedback">La ubicación es requerida</div>
+            }
+            @if (ubicaciones.length === 0) {
+              <small class="text-warning">No hay ubicaciones activas disponibles</small>
+            }
+          </div>
+
+          <!-- ============ INFORMACIÓN ADICIONAL ============ -->
+          <div class="col-12 mt-3">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-info-circle me-2"></i>Información Adicional</h6>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label fw-semibold">Especificaciones</label>
+            <textarea class="form-control shadow-sm" formControlName="especificaciones" rows="2"
+                      placeholder="Especificaciones técnicas del bien..."
+                      [class.is-invalid]="bienForm.get('especificaciones')?.invalid && bienForm.get('especificaciones')?.touched">
+            </textarea>
+            @if (bienForm.get('especificaciones')?.invalid && bienForm.get('especificaciones')?.touched) {
+              <div class="invalid-feedback">Máx. 1000 caracteres</div>
+            }
+          </div>
+
+          <div class="col-12">
+            <label class="form-label fw-semibold">Observaciones</label>
+            <textarea class="form-control shadow-sm" formControlName="observaciones" rows="2"
+                      placeholder="Observaciones adicionales..."
+                      [class.is-invalid]="bienForm.get('observaciones')?.invalid && bienForm.get('observaciones')?.touched">
+            </textarea>
+            @if (bienForm.get('observaciones')?.invalid && bienForm.get('observaciones')?.touched) {
+              <div class="invalid-feedback">Máx. 500 caracteres</div>
+            }
+          </div>
+
+          <!-- Estado Activo -->
+          <div class="col-12 mt-2">
+            <div class="form-check form-switch bg-light border rounded px-4 py-2">
+              <input type="checkbox" class="form-check-input" formControlName="activo" id="activo" role="switch">
+              <label class="form-check-label fw-semibold" for="activo">
+                Bien Activo
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="mt-4 d-flex gap-2 justify-content-end border-top pt-3">
+          <button type="button" class="btn btn-light border px-4" (click)="cancelar()">
+            <i class="bi bi-x-circle me-1"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary px-4 shadow-sm" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner-border spinner-border-sm me-2"></span> Guardando...
+            } @else {
+              <i class="bi bi-save-fill me-1"></i> {{ isEditMode() ? 'Actualizar Cambios' : 'Crear Bien' }}
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

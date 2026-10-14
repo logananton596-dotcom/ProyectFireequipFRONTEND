@@ -1,0 +1,230 @@
+<div class="bien-detail-container">
+  <!-- Botón Volver -->
+  <div class="mb-3">
+    <button class="btn btn-outline-secondary" (click)="volver()">
+      <i class="bi bi-arrow-left"></i>
+      Volver
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-2 small">Cargando información del bien...</p>
+    </div>
+  }
+
+  @if (!loading() && bien()) {
+    <div class="card shadow-sm border-0">
+      <!-- Header -->
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h4 class="card-title mb-0 fw-bold text-dark">
+          <i class="bi bi-box-seam text-primary me-2"></i>
+          {{ bien()!.nombre }}
+          <span class="badge ms-2" [class]="getEstadoBienBadgeClass(bien()!.estado)">
+            {{ formatearEstadoBien(bien()!.estado) }}
+          </span>
+          @if (bien()!.condicion) {
+            <span class="badge ms-1" [class]="getCondicionBienBadgeClass(bien()!.condicion!)">
+              {{ formatearCondicionBien(bien()!.condicion!) }}
+            </span>
+          }
+        </h4>
+        <div>
+          <button class="btn btn-primary me-2" (click)="editar()">
+            <i class="bi bi-pencil"></i>
+            Editar
+          </button>
+          <button class="btn btn-danger" (click)="eliminar()">
+            <i class="bi bi-trash"></i>
+            Eliminar
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="row">
+          <!-- Columna Izquierda -->
+          <div class="col-md-6">
+            <h6 class="text-muted border-bottom pb-2 mb-3">
+              <i class="bi bi-tag me-2"></i>Identificación
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Código CGBVP:</th>
+                <td><strong>{{ bien()!.codigoCgbvp }}</strong></td>
+              </tr>
+              <tr>
+                <th>Nombre:</th>
+                <td>{{ bien()!.nombre }}</td>
+              </tr>
+              <tr>
+                <th>Tipo de Bien:</th>
+                <td><span class="badge bg-light text-dark border">{{ formatearTipoBien(bien()!.tipoBien) }}</span></td>
+              </tr>
+            </table>
+
+            <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">
+              <i class="bi bi-gear me-2"></i>Características
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Marca:</th>
+                <td>{{ bien()!.marca || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Modelo:</th>
+                <td>{{ bien()!.modelo || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Número de Serie:</th>
+                <td>{{ bien()!.numeroSerie || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Condición:</th>
+                <td>
+                  @if (bien()!.condicion) {
+                    <span class="badge" [class]="getCondicionBienBadgeClass(bien()!.condicion!)">
+                      {{ formatearCondicionBien(bien()!.condicion!) }}
+                    </span>
+                  } @else {
+                    N/A
+                  }
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Columna Derecha -->
+          <div class="col-md-6">
+            <h6 class="text-muted border-bottom pb-2 mb-3">
+              <i class="bi bi-calendar-plus me-2"></i>Adquisición
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Fecha de Adquisición:</th>
+                <td>{{ formatFecha(bien()!.fechaAdquisicion) }}</td>
+              </tr>
+              <tr>
+                <th>Estado:</th>
+                <td>
+                  <span class="badge shadow-sm px-3 py-2 fw-bold" [class]="getEstadoBienBadgeClass(bien()!.estado)">
+                    {{ formatearEstadoBien(bien()!.estado) }}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <th>Valor Referencial:</th>
+                <td>{{ bien()!.valorReferencial ? ('S/ ' + bien()!.valorReferencial?.toFixed(2)) : 'N/A' }}</td>
+              </tr>
+            </table>
+
+            <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">
+              <i class="bi bi-house me-2"></i>Propiedad y Ubicación
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Área Propietaria:</th>
+                <td><strong>{{ bien()?.areaNombre || '-' }}</strong></td>
+              </tr>
+              <tr>
+                <th>Ubicación Física:</th>
+                <td>
+                  @if (ubicacion()) {
+                    <strong>{{ getUbicacionDisplay(ubicacion()!) }}</strong>
+                  } @else {
+                    <span class="text-muted">Ubicación no disponible</span>
+                  }
+                </td>
+              </tr>
+              <tr>
+                <th>Activo:</th>
+                <td>
+                  <span class="badge" [class.bg-success]="bien()!.activo" [class.bg-secondary]="!bien()!.activo">
+                    {{ bien()!.activo ? 'Sí' : 'No' }}
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Información Adicional -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <hr>
+            <h6 class="text-muted mb-2"><i class="bi bi-info-circle me-2"></i>Información Adicional</h6>
+            <div class="row g-3">
+              @if (bien()!.especificaciones) {
+                <div class="col-md-6">
+                  <div class="card border-0 bg-light">
+                    <div class="card-body">
+                      <h6 class="text-muted small">Especificaciones</h6>
+                      <p class="mb-0">{{ bien()!.especificaciones }}</p>
+                    </div>
+                  </div>
+                </div>
+              }
+              @if (bien()!.observaciones) {
+                <div class="col-md-6">
+                  <div class="card border-0 bg-light">
+                    <div class="card-body">
+                      <h6 class="text-muted small">Observaciones</h6>
+                      <p class="mb-0">{{ bien()!.observaciones }}</p>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Información Adicional en Cards -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <hr>
+            <h6 class="text-muted mb-2"><i class="bi bi-grid me-2"></i>Resumen</h6>
+            <div class="row g-3">
+              <div class="col-md-3">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">ID Bien</small>
+                    <strong>#{{ bien()!.id }}</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">Tipo</small>
+                    <strong>{{ formatearTipoBien(bien()!.tipoBien) }}</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">Estado</small>
+                    <span class="badge" [class]="getEstadoBienBadgeClass(bien()!.estado)">
+                      {{ formatearEstadoBien(bien()!.estado) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">Área</small>
+                    <strong>{{ bien()!.areaNombre || '-' }}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

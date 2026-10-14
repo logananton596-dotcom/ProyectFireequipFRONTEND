@@ -1,0 +1,150 @@
+<div class="casillero-form-container">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+      <h4 class="card-title mb-0 fw-bold text-dark">
+        <i class="bi text-primary me-2" [class.bi-plus-circle]="!isEditMode()" [class.bi-pencil-square]="isEditMode()"></i>
+        {{ isEditMode() ? 'Editar Casillero' : 'Nuevo Casillero' }}
+      </h4>
+    </div>
+    <div class="card-body p-4">
+      @if (loading()) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="text-muted mt-2 small">Cargando información del casillero...</p>
+        </div>
+      }
+
+      <form [formGroup]="casilleroForm" (ngSubmit)="onSubmit()">
+        <div class="row g-4">
+
+          <!-- Datos Principales -->
+          <div class="col-12">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-lock me-2"></i>Datos del Casillero</h6>
+          </div>
+
+          <!-- Código -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Código *</label>
+            <input type="text" class="form-control shadow-sm" formControlName="codigo"
+                   placeholder="Ej: CAS-001"
+                   [class.is-invalid]="casilleroForm.get('codigo')?.invalid && casilleroForm.get('codigo')?.touched">
+            @if (casilleroForm.get('codigo')?.invalid && casilleroForm.get('codigo')?.touched) {
+              <div class="invalid-feedback">El código es requerido (máx. 20 caracteres)</div>
+            }
+          </div>
+
+          <!-- Número -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Número *</label>
+            <input type="text" class="form-control shadow-sm" formControlName="numero"
+                   placeholder="Ej: 015"
+                   [class.is-invalid]="casilleroForm.get('numero')?.invalid && casilleroForm.get('numero')?.touched">
+            @if (casilleroForm.get('numero')?.invalid && casilleroForm.get('numero')?.touched) {
+              <div class="invalid-feedback">El número es requerido (máx. 20 caracteres)</div>
+            }
+          </div>
+
+          <!-- Descripción -->
+          <div class="col-12">
+            <label class="form-label fw-semibold">Descripción</label>
+            <input type="text" class="form-control shadow-sm" formControlName="descripcion"
+                   placeholder="Ej: Casillero metálico principal"
+                   [class.is-invalid]="casilleroForm.get('descripcion')?.invalid && casilleroForm.get('descripcion')?.touched">
+            @if (casilleroForm.get('descripcion')?.invalid && casilleroForm.get('descripcion')?.touched) {
+              <div class="invalid-feedback">Máx. 200 caracteres</div>
+            }
+          </div>
+
+          <!-- Ubicación Física -->
+          <div class="col-12 mt-3">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-geo-alt me-2"></i>Ubicación Física</h6>
+          </div>
+
+          <!-- Piso -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Piso</label>
+            <input type="text" class="form-control shadow-sm" formControlName="piso"
+                   placeholder="Ej: PRIMER_PISO"
+                   [class.is-invalid]="casilleroForm.get('piso')?.invalid && casilleroForm.get('piso')?.touched">
+            @if (casilleroForm.get('piso')?.invalid && casilleroForm.get('piso')?.touched) {
+              <div class="invalid-feedback">Máx. 50 caracteres</div>
+            }
+          </div>
+
+          <!-- Edificio -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Edificio</label>
+            <input type="text" class="form-control shadow-sm" formControlName="edificio"
+                   placeholder="Ej: COMANDANCIA"
+                   [class.is-invalid]="casilleroForm.get('edificio')?.invalid && casilleroForm.get('edificio')?.touched">
+            @if (casilleroForm.get('edificio')?.invalid && casilleroForm.get('edificio')?.touched) {
+              <div class="invalid-feedback">Máx. 100 caracteres</div>
+            }
+          </div>
+
+          <!-- Capacidad -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Capacidad</label>
+            <input type="number" class="form-control shadow-sm" formControlName="capacidad"
+                   placeholder="Ej: 5"
+                   min="0"
+                   [class.is-invalid]="casilleroForm.get('capacidad')?.invalid && casilleroForm.get('capacidad')?.touched">
+            @if (casilleroForm.get('capacidad')?.invalid && casilleroForm.get('capacidad')?.touched) {
+              <div class="invalid-feedback">La capacidad debe ser mayor o igual a 0</div>
+            }
+          </div>
+
+          <!-- Bombero Asignado -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Bombero Asignado</label>
+            <select class="form-select shadow-sm" formControlName="bomberoId">
+              <option [value]="null">Sin asignar</option>
+              @for (bombero of bomberos; track bombero.id) {
+                <option [value]="bombero.id">{{ getBomberoDisplay(bombero) }}</option>
+              }
+            </select>
+            <small class="text-muted">Opcional - Un bombero puede tener un solo casillero</small>
+          </div>
+
+          <!-- Observaciones -->
+          <div class="col-12">
+            <label class="form-label fw-semibold">Observaciones</label>
+            <textarea class="form-control shadow-sm" formControlName="observaciones" rows="3"
+                      placeholder="Observaciones adicionales sobre el casillero..."
+                      [class.is-invalid]="casilleroForm.get('observaciones')?.invalid && casilleroForm.get('observaciones')?.touched">
+            </textarea>
+            @if (casilleroForm.get('observaciones')?.invalid && casilleroForm.get('observaciones')?.touched) {
+              <div class="invalid-feedback">Máx. 500 caracteres</div>
+            }
+          </div>
+
+          <!-- Estado Activo -->
+          <div class="col-12 mt-2">
+            <div class="form-check form-switch bg-light border rounded px-4 py-2">
+              <input type="checkbox" class="form-check-input" formControlName="activo" id="activo" role="switch">
+              <label class="form-check-label fw-semibold" for="activo">
+                Casillero Activo
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="mt-4 d-flex gap-2 justify-content-end border-top pt-3">
+          <button type="button" class="btn btn-light border px-4" (click)="cancelar()">
+            <i class="bi bi-x-circle me-1"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary px-4 shadow-sm" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner-border spinner-border-sm me-2"></span> Guardando...
+            } @else {
+              <i class="bi bi-save-fill me-1"></i> {{ isEditMode() ? 'Actualizar Cambios' : 'Crear Casillero' }}
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

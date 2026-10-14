@@ -1,0 +1,170 @@
+<div class="bombero-detail-container">
+  <div class="mb-3">
+    <button class="btn btn-outline-secondary" (click)="volver()">
+      <i class="bi bi-arrow-left"></i>
+      Volver
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  }
+
+  @if (!loading() && bombero()) {
+    <div class="card">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h4 class="card-title mb-0">
+          <i class="bi bi-person-badge text-primary me-2"></i>
+          {{ getNombreCompleto(bombero()!) }}
+        </h4>
+        <div>
+          <button class="btn btn-primary me-2" (click)="editar()">
+            <i class="bi bi-pencil"></i>
+            Editar
+          </button>
+          <button class="btn btn-danger" (click)="eliminar()">
+            <i class="bi bi-trash"></i>
+            Eliminar
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <!-- Columna Izquierda -->
+          <div class="col-md-6">
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Código CGBVP:</th>
+                <td><strong>{{ bombero()?.codigoCgbvp }}</strong></td>
+              </tr>
+              <tr>
+                <th>Compañía:</th>
+                <td>{{ formatearCompania(bombero()?.compania!) }}</td>
+              </tr>
+              <tr>
+                <th>Nombre:</th>
+                <td>{{ bombero()?.nombre }}</td>
+              </tr>
+              <tr>
+                <th>Apellido:</th>
+                <td>{{ bombero()?.apellido }}</td>
+              </tr>
+              <tr>
+                <th>DNI:</th>
+                <td>{{ bombero()?.dni }}</td>
+              </tr>
+              <tr>
+                <th>Grado:</th>
+                <td><span class="badge bg-light text-dark border">{{ bombero()?.grado }}</span></td>
+              </tr>
+              <tr>
+                <th>Estado:</th>
+                <td>
+                  <span class="badge shadow-sm px-3 py-2 fw-bold" 
+                        [class]="getEstadoBadgeClass(bombero()?.estado ?? 'ACTIVO')">
+                    {{ bombero()?.estado ?? 'ACTIVO' }}
+                  </span>
+                </td>
+              </tr>
+              @if (bombero()?.estado === 'RESERVA' || bombero()?.estado === 'BAJA') {
+                <tr>
+                  <th>Motivo:</th>
+                  <td>{{ bombero()?.motivoEstado }}</td>
+                </tr>
+              }
+                <tr>
+                <th width="40%">Fecha Incorporación:</th>
+                <td>{{ formatFecha(bombero()?.fechaIncorporacion) }}</td>
+              </tr>
+              <tr>
+                <th>Licencia:</th>  
+                <td>
+                  <span class="badge" [class.bg-success]="bombero()?.licencia" [class.bg-secondary]="!bombero()?.licencia">
+                    {{ bombero()?.licencia ? 'Sí' : 'No' }}
+                  </span>
+                </td>
+              </tr>
+               @if (bombero()?.licencia) {
+              <tr>
+                <th>Tipo Licencia:</th>  
+                <td>{{ formatearTipoLicencia(bombero()?.tipoLicencia || 'NINGUNO') }}</td>
+              </tr>
+              <tr>
+                <th>Vehículo Autorizado:</th>  
+                <td>{{ formatearTipoVehiculo(bombero()?.tipoVehiculoLicencia || 'NINGUNO') }}</td>
+              </tr>
+              }
+              <tr>
+                <th>Limitación Salud:</th> 
+                <td>{{ bombero()?.limitacionSalud || 'Ninguna' }}</td>
+              </tr>
+
+              </table>
+          </div>
+          
+          <!-- Columna Derecha -->
+          <div class="col-md-6">
+            <table class="table table-borderless">
+
+              <tr>
+              <th>Tiene Cargo:</th>  <!-- NUEVO -->
+              <td>
+                <span class="badge" [class.bg-success]="bombero()?.tieneCargo" [class.bg-secondary]="!bombero()?.tieneCargo">
+                  {{ bombero()?.tieneCargo ? 'Sí' : 'No' }}
+                </span>
+              </td>
+              </tr>
+               @if (bombero()?.tieneCargo) {
+              <tr>
+                <th>Tipo de Cargo:</th> 
+                <td>{{ formatearTipoCargo(bombero()?.tipoCargo || 'NINGUNO') }}</td>
+              </tr> 
+              <tr>
+                <th>Inicio Cargo:</th> 
+                <td>{{ formatFecha(bombero()?.fechaInicioCargo) }}</td>
+              </tr>
+              
+              <tr>
+                <th>Fin Cargo:</th> 
+                <td>{{ formatFecha(bombero()?.fechaFinCargo) }}</td>
+              </tr>
+              }
+              <tr>
+                <th>Tipo de Sangre:</th>
+                <td><span class="badge bg-info text-white">{{ formatearTipoSangre(bombero()?.tipoSangre!) }}</span></td>
+              </tr>
+              <tr>
+                <th>Fecha Nacimiento:</th>
+                <td>{{ formatFecha(bombero()?.fechaNacimiento) }}</td>
+              </tr>
+              <tr>
+                <th>Talla:</th>
+                <td>{{ bombero()?.talla }} m</td>
+              </tr>
+              <tr>
+                <th>Peso:</th> 
+                <td>{{ bombero()?.peso }} kg</td>
+              </tr>
+              <tr>
+                <th>Teléfono:</th>
+                <td>{{ bombero()?.telefono || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Teléfono Emergencia:</th>
+                <td>{{ bombero()?.telefonoEmergencia || 'N/A' }}</td>
+              </tr>
+                <tr>
+                <th>Correo:</th>  
+                <td>{{ bombero()?.correo || 'N/A' }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

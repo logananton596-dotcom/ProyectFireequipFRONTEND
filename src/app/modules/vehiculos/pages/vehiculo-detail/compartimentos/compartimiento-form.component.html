@@ -1,0 +1,129 @@
+<div class="compartimiento-form-container">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+      <h4 class="card-title mb-0 fw-bold text-dark">
+        <i class="bi text-primary me-2" [class.bi-plus-circle]="!isEditMode()" [class.bi-pencil-square]="isEditMode()"></i>
+        {{ isEditMode() ? 'Editar Compartimiento' : 'Nuevo Compartimiento' }}
+      </h4>
+    </div>
+    <div class="card-body p-4">
+      @if (loading()) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="text-muted mt-2 small">Cargando información del compartimiento...</p>
+        </div>
+      }
+
+      <form [formGroup]="compartimientoForm" (ngSubmit)="onSubmit()">
+        <div class="row g-4">
+
+          <!-- Datos Principales -->
+          <div class="col-12">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-grid me-2"></i>Datos del Compartimiento</h6>
+          </div>
+
+          <!-- Código -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Código *</label>
+            <input type="text" class="form-control shadow-sm" formControlName="codigo"
+                   placeholder="Ej: COMP-001"
+                   [class.is-invalid]="compartimientoForm.get('codigo')?.invalid && compartimientoForm.get('codigo')?.touched">
+            @if (compartimientoForm.get('codigo')?.invalid && compartimientoForm.get('codigo')?.touched) {
+              <div class="invalid-feedback">El código es requerido (máx. 20 caracteres)</div>
+            }
+          </div>
+
+          <!-- Nombre -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Nombre *</label>
+            <input type="text" class="form-control shadow-sm" formControlName="nombre"
+                   placeholder="Ej: Compartimiento delantero"
+                   [class.is-invalid]="compartimientoForm.get('nombre')?.invalid && compartimientoForm.get('nombre')?.touched">
+            @if (compartimientoForm.get('nombre')?.invalid && compartimientoForm.get('nombre')?.touched) {
+              <div class="invalid-feedback">El nombre es requerido (máx. 100 caracteres)</div>
+            }
+          </div>
+
+          <!-- Descripción -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Descripción</label>
+            <input type="text" class="form-control shadow-sm" formControlName="descripcion"
+                   placeholder="Ej: Ubicado en la parte frontal del vehículo"
+                   [class.is-invalid]="compartimientoForm.get('descripcion')?.invalid && compartimientoForm.get('descripcion')?.touched">
+            @if (compartimientoForm.get('descripcion')?.invalid && compartimientoForm.get('descripcion')?.touched) {
+              <div class="invalid-feedback">Máx. 200 caracteres</div>
+            }
+          </div>
+
+          <!-- Capacidad -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Capacidad</label>
+            <input type="number" class="form-control shadow-sm" formControlName="capacidad"
+                   placeholder="Ej: 20"
+                   min="0"
+                   [class.is-invalid]="compartimientoForm.get('capacidad')?.invalid && compartimientoForm.get('capacidad')?.touched">
+            @if (compartimientoForm.get('capacidad')?.invalid && compartimientoForm.get('capacidad')?.touched) {
+              <div class="invalid-feedback">La capacidad debe ser mayor o igual a 0</div>
+            }
+          </div>
+
+          <!-- Vehículo -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Vehículo *</label>
+            <select class="form-select shadow-sm" formControlName="vehiculoId"
+                    [class.is-invalid]="compartimientoForm.get('vehiculoId')?.invalid && compartimientoForm.get('vehiculoId')?.touched">
+              <option value="" disabled>Seleccione vehículo...</option>
+              @for (vehiculo of vehiculos; track vehiculo.id) {
+                <option [value]="vehiculo.id">{{ getVehiculoDisplay(vehiculo) }}</option>
+              }
+            </select>
+            @if (compartimientoForm.get('vehiculoId')?.invalid && compartimientoForm.get('vehiculoId')?.touched) {
+              <div class="invalid-feedback">El vehículo es requerido</div>
+            }
+            @if (vehiculos.length === 0) {
+              <small class="text-warning">No hay vehículos activos disponibles</small>
+            }
+          </div>
+
+          <!-- Estado Activo -->
+          <div class="col-md-6 d-flex align-items-end">
+            <div class="form-check form-switch bg-light border rounded px-4 py-2 w-100 shadow-sm">
+              <input type="checkbox" class="form-check-input" formControlName="activo" id="activo" role="switch">
+              <label class="form-check-label fw-semibold" for="activo">
+                Compartimiento Activo
+              </label>
+            </div>
+          </div>
+
+          <!-- Observaciones -->
+          <div class="col-12">
+            <label class="form-label fw-semibold">Observaciones</label>
+            <textarea class="form-control shadow-sm" formControlName="observaciones" rows="3"
+                      placeholder="Observaciones adicionales sobre el compartimiento..."
+                      [class.is-invalid]="compartimientoForm.get('observaciones')?.invalid && compartimientoForm.get('observaciones')?.touched">
+            </textarea>
+            @if (compartimientoForm.get('observaciones')?.invalid && compartimientoForm.get('observaciones')?.touched) {
+              <div class="invalid-feedback">Máx. 500 caracteres</div>
+            }
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="mt-4 d-flex gap-2 justify-content-end border-top pt-3">
+          <button type="button" class="btn btn-light border px-4" (click)="cancelar()">
+            <i class="bi bi-x-circle me-1"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary px-4 shadow-sm" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner-border spinner-border-sm me-2"></span> Guardando...
+            } @else {
+              <i class="bi bi-save-fill me-1"></i> {{ isEditMode() ? 'Actualizar Cambios' : 'Crear Compartimiento' }}
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

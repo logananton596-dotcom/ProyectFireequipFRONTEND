@@ -1,0 +1,200 @@
+<div class="casillero-container">
+  <!-- Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <h1 class="h2 mb-0 fw-bold text-dark">
+      <i class="bi bi-lock text-primary me-2"></i> Casilleros
+      <span class="badge bg-secondary ms-2 fs-6">{{ filteredCasilleros().length }}</span>
+    </h1>
+    <button class="btn btn-primary shadow-sm" routerLink="/casilleros/nuevo">
+      <i class="bi bi-plus-circle-fill me-1"></i> Nuevo Casillero
+    </button>
+  </div>
+
+  <!-- Barra de búsqueda y filtros -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body bg-white rounded">
+      <!-- Búsqueda -->
+      <div class="input-group mb-3">
+        <span class="input-group-text bg-light border-end-0 text-muted">
+          <i class="bi bi-search"></i>
+        </span>
+        <input type="text" 
+               class="form-control bg-light border-start-0 ps-0" 
+               placeholder="Buscar por código, número, descripción, edificio o piso..."
+               [ngModel]="searchTerm()"
+               (input)="onSearchChange($event)">
+        @if (searchTerm()) {
+          <button class="btn btn-outline-secondary border-start-0" type="button" 
+                  (click)="searchTerm.set(''); paginaActual.set(1)">
+            <i class="bi bi-x-circle-fill text-muted"></i>
+          </button>
+        }
+      </div>
+
+      <!-- Filtros -->
+      <div class="row g-2">
+        <div class="col-md-4">
+          <select class="form-select form-select-sm" [ngModel]="filtroEstado()" 
+                  (ngModelChange)="filtroEstado.set($event); paginaActual.set(1)">
+            <option value="TODOS">Todos los estados</option>
+            <option value="ACTIVO">Activos</option>
+            <option value="INACTIVO">Inactivos</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <select class="form-select form-select-sm" [ngModel]="filtroAsignacion()" 
+                  (ngModelChange)="filtroAsignacion.set($event); paginaActual.set(1)">
+            <option value="TODOS">Todos</option>
+            <option value="ASIGNADO">Asignados</option>
+            <option value="DISPONIBLE">Disponibles</option>
+          </select>
+        </div>
+        <div class="col-md-4 text-end">
+          <button class="btn btn-sm btn-outline-secondary" (click)="limpiarFiltros()">
+            <i class="bi bi-eraser me-1"></i> Limpiar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-2">Cargando casilleros...</p>
+    </div>
+  } @else {
+    @if (filteredCasilleros().length === 0) {
+      <div class="text-center py-5 bg-white rounded shadow-sm border">
+        <i class="bi bi-lock display-1 text-muted"></i>
+        <p class="text-muted mt-3 fs-5">No hay casilleros registrados</p>
+        <button class="btn btn-primary mt-2" routerLink="/casilleros/nuevo">
+          <i class="bi bi-plus-circle me-1"></i> Crear Primer Casillero
+        </button>
+      </div>
+    } @else {
+      <div class="card shadow-sm border-0">
+        <!-- Selector de cantidad por página -->
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom-0">
+          <div class="d-flex align-items-center gap-2">
+            <span class="text-muted small">Mostrar</span>
+            <select class="form-select form-select-sm" style="width: auto;" 
+                    [ngModel]="tamanoPagina()" 
+                    (ngModelChange)="onTamanoPaginaChange($event)">
+              @for (opcion of opcionesTamano; track opcion) {
+                <option [value]="opcion">{{ opcion }} registros</option>
+              }
+            </select>
+          </div>
+          <span class="text-muted small">
+            Mostrando del {{ (paginaActual() - 1) * tamanoPagina() + 1 }} al 
+            {{ Math.min(paginaActual() * tamanoPagina(), filteredCasilleros().length) }} de {{ filteredCasilleros().length }}
+          </span>
+        </div>
+
+        <!-- Tabla -->
+        <div class="card-body p-0">
+          <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+            <table class="table table-lg table-hover align-middle mb-0 text-nowrap">
+              <thead class="table-light text-uppercase fs-6 text-muted sticky-top shadow-sm" style="z-index: 1;">
+                <tr>
+                  <th class="ps-4" style="min-width: 100px;">Código</th>
+                  <th style="min-width: 80px;">Número</th>
+                  <th style="min-width: 140px;">Descripción</th>
+                  <th style="min-width: 100px;">Piso</th>
+                  <th style="min-width: 130px;">Edificio</th>
+                  <th style="min-width: 80px;">Cap.</th>
+                  <th style="min-width: 160px;">Bombero</th>
+                  <th style="min-width: 100px;">Estado</th>
+                  <th style="min-width: 100px;">Asignación</th>
+                  <th class="text-end pe-4" style="min-width: 150px;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (casillero of casillerosPaginados(); track casillero.id) {
+                  <tr>
+                    <td class="ps-4"><strong>{{ casillero.codigo }}</strong></td>
+                    <td>{{ casillero.numero }}</td>
+                    <td>{{ casillero.descripcion || 'N/A' }}</td>
+                    <td>{{ casillero.piso || 'N/A' }}</td>
+                    <td>{{ casillero.edificio || 'N/A' }}</td>
+                    <td>{{ casillero.capacidad || 'N/A' }}</td>
+                    <td>{{ getBomberoNombre(casillero.bomberoId) }}</td>
+                    <td>
+                      <span class="badge shadow-sm px-3 py-2 fw-bold" 
+                            [class]="getEstadoCasilleroBadgeClass(casillero.activo)">
+                        {{ formatearEstadoCasillero(casillero.activo) }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge shadow-sm px-3 py-2 fw-bold" 
+                            [class]="getAsignacionBadgeClass(casillero.bomberoId)">
+                        {{ formatearAsignacion(casillero.bomberoId) }}
+                      </span>
+                    </td>
+                    <td class="text-end pe-4">
+                      <div class="btn-group btn-group-sm shadow-sm">
+                        <button class="btn btn-outline-secondary" 
+                                (click)="casillero.id && verDetalle(casillero.id)" title="Ver Detalle">
+                          <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-outline-primary" 
+                                (click)="casillero.id && editar(casillero.id)" title="Editar">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-warning" 
+                                (click)="casillero.id && cambiarEstado(casillero.id, casillero.activo, casillero.numero)" 
+                                title="{{ casillero.activo ? 'Inactivar' : 'Activar' }}">
+                          <i class="bi" [class.bi-pause-circle]="casillero.activo" [class.bi-play-circle]="!casillero.activo"></i>
+                        </button>
+                        <button class="btn btn-outline-danger" 
+                                (click)="casillero.id && eliminar(casillero.id, casillero.numero)" title="Eliminar">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Paginación -->
+        <div class="card-footer bg-white py-3 d-flex justify-content-center align-items-center border-top">
+          <nav aria-label="Navegación de casilleros">
+            <ul class="pagination pagination-sm mb-0 gap-1">
+              <li class="page-item" [class.disabled]="paginaActual() === 1">
+                <button class="btn btn-sm btn-light border" (click)="cambiarPagina(1)" [disabled]="paginaActual() === 1">
+                  <i class="bi bi-chevron-double-left"></i> Primero
+                </button>
+              </li>
+              <li class="page-item" [class.disabled]="paginaActual() === 1">
+                <button class="btn btn-sm btn-light border" (click)="cambiarPagina(paginaActual() - 1)" [disabled]="paginaActual() === 1">
+                  <i class="bi bi-chevron-left"></i>
+                </button>
+              </li>
+              <li class="page-item disabled">
+                <span class="btn btn-sm btn-primary text-white fw-bold border px-3">
+                  Pág. {{ paginaActual() }} de {{ totalPaginas() }}
+                </span>
+              </li>
+              <li class="page-item" [class.disabled]="paginaActual() === totalPaginas()">
+                <button class="btn btn-sm btn-light border" (click)="cambiarPagina(paginaActual() + 1)" [disabled]="paginaActual() === totalPaginas()">
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+              </li>
+              <li class="page-item" [class.disabled]="paginaActual() === totalPaginas()">
+                <button class="btn btn-sm btn-light border" (click)="cambiarPagina(totalPaginas())" [disabled]="paginaActual() === totalPaginas()">
+                  Último <i class="bi bi-chevron-double-right"></i>
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    }
+  }
+</div>

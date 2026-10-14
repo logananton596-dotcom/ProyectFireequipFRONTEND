@@ -1,0 +1,331 @@
+<div class="bombero-form-container">
+  <div class="card">
+    <div class="card-header bg-white">
+      <h4 class="card-title mb-0">
+        <i class="bi" [class.bi-plus-circle]="!isEditMode()" [class.bi-pencil-square]="isEditMode()"></i>
+        {{ isEditMode() ? 'Editar Bombero' : 'Nuevo Bombero' }}
+      </h4>
+    </div>
+    <div class="card-body">
+      @if (loading()) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+        </div>
+      }
+
+      <form [formGroup]="bomberoForm" (ngSubmit)="onSubmit()">
+        <div class="row g-3">
+          
+          <!-- Fila 1: Código CGBVP y Compañía -->
+          <div class="col-md-6">
+            <label class="form-label">Código CGBVP *</label>
+            <input type="text" class="form-control" formControlName="codigoCgbvp"
+                   placeholder="Ej: A11111"
+                   [class.is-invalid]="bomberoForm.get('codigoCgbvp')?.invalid && bomberoForm.get('codigoCgbvp')?.touched">
+            @if (bomberoForm.get('codigoCgbvp')?.invalid && bomberoForm.get('codigoCgbvp')?.touched) {
+              <div class="invalid-feedback">Formato: Letra + 5 dígitos (Ej: A11111)</div>
+            }
+          </div>
+            <div class="col-md-6">
+              <label class="form-label">Compañía *</label>
+              <select class="form-select" formControlName="compania"
+                      [class.is-invalid]="bomberoForm.get('compania')?.invalid && bomberoForm.get('compania')?.touched">
+                <option value="" disabled>Seleccione compañía...</option>
+                @for (comp of companiasDisponibles; track comp) {
+                  <option [value]="comp">{{ formatearCompania(comp) }}</option>
+                }
+              </select>
+              @if (bomberoForm.get('compania')?.invalid && bomberoForm.get('compania')?.touched) {
+                <div class="invalid-feedback">La compañía es requerida</div>
+              }
+            </div>
+
+          <!-- Fila 2: Nombre y Apellido -->
+          <div class="col-md-6">
+            <label class="form-label">Nombre *</label>
+            <input type="text" class="form-control" formControlName="nombre"
+                   [class.is-invalid]="bomberoForm.get('nombre')?.invalid && bomberoForm.get('nombre')?.touched">
+            @if (bomberoForm.get('nombre')?.invalid && bomberoForm.get('nombre')?.touched) {
+              <div class="invalid-feedback">El nombre es requerido</div>
+            }
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Apellido *</label>
+            <input type="text" class="form-control" formControlName="apellido"
+                   [class.is-invalid]="bomberoForm.get('apellido')?.invalid && bomberoForm.get('apellido')?.touched">
+            @if (bomberoForm.get('apellido')?.invalid && bomberoForm.get('apellido')?.touched) {
+              <div class="invalid-feedback">El apellido es requerido</div>
+            }
+          </div>
+
+          <!-- Fila 3: DNI, Fecha Nac -->
+          <div class="col-md-6">
+            <label class="form-label">DNI *</label>
+            <input type="text" class="form-control" formControlName="dni"
+                   placeholder="8 dígitos"
+                   [class.is-invalid]="bomberoForm.get('dni')?.invalid && bomberoForm.get('dni')?.touched">
+            @if (bomberoForm.get('dni')?.invalid && bomberoForm.get('dni')?.touched) {
+              <div class="invalid-feedback">DNI debe tener exactamente 8 dígitos</div>
+            }
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Fecha de Nacimiento *</label>
+            <input type="date" class="form-control" formControlName="fechaNacimiento"
+                   [class.is-invalid]="bomberoForm.get('fechaNacimiento')?.invalid && bomberoForm.get('fechaNacimiento')?.touched">
+            @if (bomberoForm.get('fechaNacimiento')?.invalid && bomberoForm.get('fechaNacimiento')?.touched) {
+              <div class="invalid-feedback">La fecha de nacimiento es requerida</div>
+            }
+          </div>
+
+            <!-- Fila 4: Tipo Sangre, Talla y Peso (NUEVOS CAMPOS FÍSICOS) -->
+          <div class="col-md-4">
+            <label class="form-label">Tipo de Sangre *</label>
+            <select class="form-select" formControlName="tipoSangre"
+                    [class.is-invalid]="bomberoForm.get('tipoSangre')?.invalid && bomberoForm.get('tipoSangre')?.touched">
+              <option value="" disabled>Seleccione...</option>
+              @for (tipo of tiposSangre; track tipo) {
+                <option [value]="tipo">{{ tipo.replace('_', '') }}</option>
+              }
+            </select>
+            @if (bomberoForm.get('tipoSangre')?.invalid && bomberoForm.get('tipoSangre')?.touched) {
+              <div class="invalid-feedback">El tipo de sangre es requerido</div>
+            }
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Talla (m) *</label>
+            <input type="number" step="0.01" class="form-control" formControlName="talla"
+                   placeholder="Ej: 1.75"
+                   [class.is-invalid]="bomberoForm.get('talla')?.invalid && bomberoForm.get('talla')?.touched">
+            @if (bomberoForm.get('talla')?.invalid && bomberoForm.get('talla')?.touched) {
+              <div class="invalid-feedback">Talla mayor a 1.5 Mt.</div>
+            }
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Peso (kg) *</label>
+            <input type="number" step="0.1" class="form-control" formControlName="peso"
+                   placeholder="Ej: 72.5"
+                   [class.is-invalid]="bomberoForm.get('peso')?.invalid && bomberoForm.get('peso')?.touched">
+            @if (bomberoForm.get('peso')?.invalid && bomberoForm.get('peso')?.touched) {
+              <div class="invalid-feedback">Peso kg</div>
+            }
+          </div>
+          
+          <!-- Fila 4: Fechas incorp y  grado -->
+          <div class="col-md-6">
+            <label class="form-label">Fecha de Incorporación *</label>
+            <input type="date" class="form-control" formControlName="fechaIncorporacion"
+                   [class.is-invalid]="bomberoForm.get('fechaIncorporacion')?.invalid && bomberoForm.get('fechaIncorporacion')?.touched">
+            @if (bomberoForm.get('fechaIncorporacion')?.invalid && bomberoForm.get('fechaIncorporacion')?.touched) {
+              <div class="invalid-feedback">La fecha de incorporación es requerida</div>
+            }
+          </div>
+          
+          <div class="col-md-6">
+            <label class="form-label">Grado *</label>
+            <select class="form-select" formControlName="grado"
+                    [class.is-invalid]="bomberoForm.get('grado')?.invalid && bomberoForm.get('grado')?.touched">
+              <option value="" disabled>Seleccione grado...</option>
+              @for (grado of gradosDisponibles; track grado) {
+                <option [value]="grado">{{ grado }}</option>
+              }
+            </select>
+            @if (bomberoForm.get('grado')?.invalid && bomberoForm.get('grado')?.touched) {
+              <div class="invalid-feedback">El grado es requerido</div>
+            }
+          </div>
+
+          <!-- Fila 5: Teléfonos -->
+          <div class="col-md-6">
+            <label class="form-label">Teléfono</label>
+            <input type="text" class="form-control" formControlName="telefono"
+                   placeholder="9 dígitos"
+                   [class.is-invalid]="bomberoForm.get('telefono')?.invalid && bomberoForm.get('telefono')?.touched">
+            @if (bomberoForm.get('telefono')?.invalid && bomberoForm.get('telefono')?.touched) {
+              <div class="invalid-feedback">Debe tener 9 dígitos</div>
+            }
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Teléfono de Emergencia</label>
+            <input type="text" class="form-control" formControlName="telefonoEmergencia"
+                   placeholder="9 dígitos"
+                   [class.is-invalid]="bomberoForm.get('telefonoEmergencia')?.invalid && bomberoForm.get('telefonoEmergencia')?.touched">
+            @if (bomberoForm.get('telefonoEmergencia')?.invalid && bomberoForm.get('telefonoEmergencia')?.touched) {
+              <div class="invalid-feedback">Debe tener 9 dígitos</div>
+            }
+          </div>
+
+          <!-- NUEVA FILA: Correo Electrónico -->
+          <div class="col-md-6">
+            <label class="form-label">Correo Electrónico</label>
+            <input type="email" class="form-control" formControlName="correo"
+                  placeholder="bombero@bomberos.pe"
+                  [class.is-invalid]="bomberoForm.get('correo')?.invalid && bomberoForm.get('correo')?.touched">
+            @if (bomberoForm.get('correo')?.invalid && bomberoForm.get('correo')?.touched) {
+              <div class="invalid-feedback">Ingrese un correo válido</div>
+            }
+          </div>
+
+          <!-- Fila 6: Estado -->
+          <div [attr.inert]="modalAbierto() ? '' : null">
+            
+            <form [formGroup]="bomberoForm" (ngSubmit)="onSubmit()">
+              
+              <!-- Fila 6: Estado -->
+              <div class="col-md-6">
+                <label class="form-label">Estado Administrativo *</label>
+                <select class="form-select" formControlName="estado"
+                        (change)="onEstadoChange()"
+                        [class.is-invalid]="bomberoForm.get('estado')?.invalid && bomberoForm.get('estado')?.touched">
+                  <option value="" disabled>Seleccione estado...</option>
+                  @for (est of estadosDisponibles; track est) {
+                    <option [value]="est">{{ est }}</option>
+                  }
+                </select>
+                @if (bomberoForm.get('estado')?.invalid && bomberoForm.get('estado')?.touched) {
+                  <div class="invalid-feedback">El estado es requerido</div>
+                }
+              </div>
+
+              <!-- Campo oculto para motivoEstado (no se muestra en UI) -->
+              <input type="hidden" formControlName="motivoEstado">
+
+              <!-- El resto de tus campos y botones del formulario van aquí... -->
+              
+            </form>
+          </div> <!-- AQUÍ CIERRA EL BLOQUE ENVELOPE INERT -->
+
+          <!-- NUEVA FILA: Limitación de Salud -->
+          <div class="col-md-12">
+            <div class="form-check form-switch mb-2">
+              <input class="form-check-input" type="checkbox" id="tieneLimitacionSalud" formControlName="tieneLimitacionSalud">
+              <label class="form-check-label" for="tieneLimitacionSalud">¿Registrar alguna limitación de salud o condiciones médicas?</label>
+            </div>
+            <textarea class="form-control" formControlName="limitacionSalud" rows="2"
+                      placeholder="Describa alguna limitación física o de salud relevante..."
+                      [class.is-invalid]="bomberoForm.get('limitacionSalud')?.invalid && bomberoForm.get('limitacionSalud')?.touched">
+            </textarea>
+            @if (bomberoForm.get('limitacionSalud')?.invalid && bomberoForm.get('limitacionSalud')?.touched) {
+              <div class="invalid-feedback">Máximo 500 caracteres</div>
+            }
+          </div>
+
+
+          <!-- Fila 8: Datos de Cargo (NUEVO SPRINT 4) -->
+        <div class="col-md-12">
+          <hr class="my-3">
+          <h6 class="text-muted mb-3"><i class="bi bi-briefcase me-2"></i>Información de Cargo</h6>
+        </div>
+
+        <!-- Checkbox Tiene Cargo -->
+        <div class="col-md-12">
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" formControlName="tieneCargo"
+                  id="tieneCargo">
+            <label class="form-check-label fw-semibold" for="tieneCargo">
+              ¿Tiene cargo institucional?
+            </label>
+          </div>
+        </div>
+
+        <!-- Tipo de Cargo (visible solo si tieneCargo = true) -->
+        <div class="col-md-6">
+          <label class="form-label">Tipo de Cargo</label>
+          <select class="form-select" formControlName="tipoCargo"
+                  [disabled]="!bomberoForm.get('tieneCargo')?.value"
+                  [class.is-invalid]="bomberoForm.get('tipoCargo')?.invalid && bomberoForm.get('tipoCargo')?.touched">
+            <option value="" disabled>Seleccione cargo...</option>
+            @for (cargo of tiposCargo; track cargo) {
+              <option [value]="cargo">{{ cargo.replace('_', ' ') }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Fecha Inicio Cargo -->
+        <div class="col-md-3">
+          <label class="form-label">Fecha Inicio Cargo</label>
+          <input type="date" class="form-control" formControlName="fechaInicioCargo"
+                [disabled]="!bomberoForm.get('tieneCargo')?.value">
+        </div>
+
+        <!-- Fecha Fin Cargo -->
+        <div class="col-md-3">
+          <label class="form-label">Fecha Fin Cargo</label>
+          <input type="date" class="form-control" formControlName="fechaFinCargo"
+                [disabled]="!bomberoForm.get('tieneCargo')?.value">
+        </div>
+
+
+        <!-- NUEVA FILA: Licencias -->
+        <div class="col-md-12">
+          <hr class="my-3">
+          <h6 class="text-muted mb-3"><i class="bi bi-car-front me-2"></i>Licencias y Vehículos</h6>
+        </div>
+
+        <!-- Checkbox Licencia -->
+        <div class="col-md-12">
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" formControlName="licencia"
+                  id="licencia">
+            <label class="form-check-label fw-semibold" for="licencia">
+              ¿Posee licencia de conducir?
+            </label>
+          </div>
+        </div>
+
+        <!-- Tipo de Licencia (visible solo si licencia = true) -->
+        <div class="col-md-6">
+          <label class="form-label">Tipo de Licencia</label>
+          <select class="form-select" formControlName="tipoLicencia"
+                  [disabled]="!bomberoForm.get('licencia')?.value">
+            <option value="" disabled>Seleccione tipo...</option>
+            @for (tipo of tiposLicencia; track tipo) {
+              <option [value]="tipo">{{ formatearTipoLicencia(tipo) }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Tipo de Vehículo Autorizado (visible solo si licencia = true) -->
+        <div class="col-md-6">
+          <label class="form-label">Tipo de Vehículo Autorizado</label>
+          <select class="form-select" formControlName="tipoVehiculoLicencia"
+                  [disabled]="!bomberoForm.get('licencia')?.value">
+            <option value="" disabled>Seleccione vehículo...</option>
+            @for (vehiculo of tiposVehiculoLicencia; track vehiculo) {
+              <option [value]="vehiculo">{{ formatearTipoVehiculo(vehiculo) }}</option>
+            }
+          </select>
+        </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="mt-4 d-flex gap-2 justify-content-end border-top pt-3">
+          <button type="button" class="btn btn-light border" (click)="cancelar()">
+            <i class="bi bi-x-circle me-1"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary px-4 shadow-sm" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>
+            } @else {
+              <i class="bi bi-save-fill me-1"></i>
+            }
+            {{ isEditMode() ? 'Actualizar Cambios' : 'Registrar Efectivo' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+  
+
+<app-modal-motivo 
+  (motivoConfirmado)="onMotivoConfirmado($event)"
+  (motivoCancelado)="onMotivoCancelado()">
+</app-modal-motivo>

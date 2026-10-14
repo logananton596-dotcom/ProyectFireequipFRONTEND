@@ -1,0 +1,347 @@
+<div class="equipo-form-container">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+      <h4 class="card-title mb-0 fw-bold text-dark">
+        <i class="bi text-primary me-2" [class.bi-plus-circle]="!isEditMode()" [class.bi-pencil-square]="isEditMode()"></i>
+        {{ isEditMode() ? 'Editar Equipo' : 'Nuevo Equipo' }}
+      </h4>
+    </div>
+    <div class="card-body p-4">
+      @if (loading()) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="text-muted mt-2 small">Cargando información del equipo...</p>
+        </div>
+      }
+
+      <form [formGroup]="equipoForm" (ngSubmit)="onSubmit()">
+        <div class="row g-4">
+
+          <!-- Tipo de Inventario (Primero para controlar visibilidad) -->
+          <div class="col-12">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-tag me-2"></i>Clasificación</h6>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Tipo de Inventario *</label>
+            <select class="form-select shadow-sm" formControlName="tipoInventario"
+                    [class.is-invalid]="equipoForm.get('tipoInventario')?.invalid && equipoForm.get('tipoInventario')?.touched">
+              @for (tipo of tiposInventario; track tipo) {
+                <option [value]="tipo">{{ formatearTipoInventario(tipo) }}</option>
+              }
+            </select>
+            @if (equipoForm.get('tipoInventario')?.invalid && equipoForm.get('tipoInventario')?.touched) {
+              <div class="invalid-feedback">El tipo de inventario es requerido</div>
+            }
+          </div>
+
+          <!-- Campos INDIVIDUAL (Código y Serie) -->
+          @if (equipoForm.get('tipoInventario')?.value === 'INDIVIDUAL') {
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Código CGBVP *</label>
+              <input type="text" class="form-control shadow-sm" formControlName="codigoCgbvp"
+                     placeholder="Ej: A19066"
+                     [class.is-invalid]="equipoForm.get('codigoCgbvp')?.invalid && equipoForm.get('codigoCgbvp')?.touched">
+              @if (equipoForm.get('codigoCgbvp')?.invalid && equipoForm.get('codigoCgbvp')?.touched) {
+                <div class="invalid-feedback">El código es requerido para inventario INDIVIDUAL</div>
+              }
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Número de Serie *</label>
+              <input type="text" class="form-control shadow-sm" formControlName="numeroSerie"
+                     placeholder="Ej: SN-2024-001"
+                     [class.is-invalid]="equipoForm.get('numeroSerie')?.invalid && equipoForm.get('numeroSerie')?.touched">
+              @if (equipoForm.get('numeroSerie')?.invalid && equipoForm.get('numeroSerie')?.touched) {
+                <div class="invalid-feedback">El número de serie es requerido para inventario INDIVIDUAL</div>
+              }
+            </div>
+          }
+
+          <!-- Campos MULTIPLE (Stock) -->
+          @if (equipoForm.get('tipoInventario')?.value === 'MULTIPLE') {
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Cantidad (Stock) *</label>
+              <input type="number" class="form-control shadow-sm" formControlName="stock"
+                    placeholder="Ej: 20"
+                    min="1"
+                    [class.is-invalid]="equipoForm.get('stock')?.invalid && equipoForm.get('stock')?.touched">
+              @if (equipoForm.get('stock')?.invalid && equipoForm.get('stock')?.touched) {
+                <div class="invalid-feedback">La cantidad debe ser mayor a 0</div>
+              }
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Stock Mínimo *</label>
+              <!-- Agregamos readonly y bg-light para que aparezca bloqueado en 1 pero SÍ envíe el valor al Backend -->
+              <input type="number" class="form-control shadow-sm" formControlName="stockMinimo"
+                    placeholder="Ej: 5"
+                    [class.is-invalid]="equipoForm.get('stockMinimo')?.invalid && equipoForm.get('stockMinimo')?.touched">
+              @if (equipoForm.get('stockMinimo')?.invalid && equipoForm.get('stockMinimo')?.touched) {
+                <div class="invalid-feedback">El stock mínimo es requerido</div>
+              }
+            </div>
+          }
+          
+          <!-- Campos comunes INDIVIDUAL también tienen stock pero fijos -->
+          @if (equipoForm.get('tipoInventario')?.value === 'INDIVIDUAL') {
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Cantidad (Stock)</label>
+              <!-- Agregamos readonly y bg-light para proteger el valor fijo de 1 -->
+              <input type="number" class="form-control shadow-sm bg-light" formControlName="stock" readonly>
+              <small class="text-muted">Para inventario INDIVIDUAL el stock siempre es 1</small>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Stock Mínimo</label>
+              <!-- 🌟 Comentario corregido: Protege el valor de lectura con readonly -->
+              <input type="number" class="form-control shadow-sm bg-light" formControlName="stockMinimo" readonly>
+              <small class="text-muted">Para inventario INDIVIDUAL el stock mínimo siempre es 1</small>
+            </div> 
+          }
+          <!-- Información General -->
+          <div class="col-12 mt-3">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-info-circle me-2"></i>Información General</h6>
+          </div>
+
+          <!-- Nombre Equipo con Buscador Nativo HTML5 -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Nombre Equipo *</label>
+            
+            <!-- El input se conecta a la lista mediante el atributo list -->
+            <input type="text" 
+                   class="form-control shadow-sm" 
+                   formControlName="nombreEquipo"
+                   list="listaMaterialesEpp"
+                   placeholder="Escriba para buscar o filtrar equipo...">
+            
+            <!-- El catálogo gigante se renderiza aquí de forma oculta hasta que el usuario escribe -->
+            <datalist id="listaMaterialesEpp">
+              @for (nombre of nombresEquipo; track nombre) {
+                <!-- Guardamos el Enum técnico en el value y mostramos el texto legible al lado -->
+                <option [value]="nombre">{{ formatearNombreEquipo(nombre) }}</option>
+              }
+            </datalist>
+
+            <!-- SI SELECCIONA 'OTRO', DESPLEGAMOS UN CAMPO DE TEXTO LIBRE OBLIGATORIO -->
+            @if (equipoForm.get('nombreEquipo')?.value === 'OTRO') {
+              <div class="col-md-6 mt-2 animate__animated animate__fadeIn">
+                <label class="form-label fw-semibold text-warning">Especifique el Nuevo Equipo / Herramienta *</label>
+                <input type="text" class="form-control border-warning" formControlName="especificacion"
+                      placeholder="Ej: MOTOBOMBA DE ALTO CAUDAL">
+              </div>
+            }
+
+            @if (equipoForm.get('nombreEquipo')?.invalid && equipoForm.get('nombreEquipo')?.touched) {
+              <div class="text-danger small mt-1">El nombre del equipo es requerido</div>
+            }
+          </div>
+
+          <!-- Tipo Equipo -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Tipo Equipo *</label>
+            <select class="form-select shadow-sm" formControlName="tipoEquipo"
+                    [class.is-invalid]="equipoForm.get('tipoEquipo')?.invalid && equipoForm.get('tipoEquipo')?.touched">
+              <option value="" disabled>Seleccione tipo...</option>
+              @for (tipo of tiposEquipo; track tipo) {
+                <option [value]="tipo">{{ formatearTipoEquipo(tipo) }}</option>
+              }
+            </select>
+            @if (equipoForm.get('tipoEquipo')?.invalid && equipoForm.get('tipoEquipo')?.touched) {
+              <div class="invalid-feedback">El tipo de equipo es requerido</div>
+            }
+          </div>
+
+          <!-- Compañía -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Compañía *</label>
+            <select class="form-select shadow-sm" formControlName="compania"
+                    [class.is-invalid]="equipoForm.get('compania')?.invalid && equipoForm.get('compania')?.touched">
+              <option value="" disabled>Seleccione compañía...</option>
+              @for (compania of companias; track compania) {
+                <option [value]="compania">{{ formatearCompania(compania) }}</option>
+              }
+            </select>
+            @if (equipoForm.get('compania')?.invalid && equipoForm.get('compania')?.touched) {
+              <div class="invalid-feedback">La compañía es requerida</div>
+            }
+          </div>
+
+          <!-- Área -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Área *</label>
+            <select class="form-select shadow-sm" formControlName="areaId"
+                    [class.is-invalid]="equipoForm.get('areaId')?.invalid && equipoForm.get('areaId')?.touched">
+              <option value="" disabled>Seleccione área...</option>
+              @for (area of areasActivas(); track area.id)  {
+                <option [value]="area.id">{{ area.nombreArea }}</option>
+              }
+            </select>
+            @if (equipoForm.get('areaId')?.invalid && equipoForm.get('areaId')?.touched) {
+              <div class="invalid-feedback">El área es requerida</div>
+            }
+          </div>
+                  <!-- Ubicación (NUEVO) -->
+        <!-- Ubicación Física -->
+        <div class="col-md-6">
+          <app-select-ubicacion
+            id="ubicacionId"
+            label="Ubicación Física *"
+            formControlName="ubicacionId"
+            [required]="true"
+            [soloActivas]="false"
+            [invalid]="equipoForm.get('ubicacionId')?.invalid || false"
+            [touched]="equipoForm.get('ubicacionId')?.touched || false"
+            errorMessage="La ubicación física de la herramienta es requerida">
+          </app-select-ubicacion>
+        </div>
+
+          <!-- Fecha Incorporación -->
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Fecha de Incorporación *</label>
+            <input type="date" class="form-control shadow-sm" formControlName="fechaIncorporacion"
+                   [class.is-invalid]="equipoForm.get('fechaIncorporacion')?.invalid && equipoForm.get('fechaIncorporacion')?.touched">
+            @if (equipoForm.get('fechaIncorporacion')?.invalid && equipoForm.get('fechaIncorporacion')?.touched) {
+              <div class="invalid-feedback">La fecha de incorporación es requerida</div>
+            }
+          </div>
+
+          <!-- Vida Útil -->
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Vida Útil (años) *</label>
+            <input type="number" class="form-control shadow-sm" formControlName="vidaUtilAnios"
+                   placeholder="Ej: 5"
+                   min="1"
+                   [class.is-invalid]="equipoForm.get('vidaUtilAnios')?.invalid && equipoForm.get('vidaUtilAnios')?.touched">
+            @if (equipoForm.get('vidaUtilAnios')?.invalid && equipoForm.get('vidaUtilAnios')?.touched) {
+              @if (equipoForm.get('vidaUtilAnios')?.errors?.['required']) {
+                <div class="invalid-feedback">La vida útil es requerida</div>
+              }
+              @if (equipoForm.get('vidaUtilAnios')?.errors?.['min']) {
+                <div class="invalid-feedback">La vida útil debe ser mayor a 0</div>
+              }
+            }
+          </div>
+
+          <!-- Estado -->
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Estado *</label>
+            <select class="form-select shadow-sm" formControlName="estado"
+                    [class.is-invalid]="equipoForm.get('estado')?.invalid && equipoForm.get('estado')?.touched">
+              @for (estado of estadosEquipo; track estado) {
+                <option [value]="estado">{{ formatearEstadoEquipo(estado) }}</option>
+              }
+            </select>
+            @if (equipoForm.get('estado')?.invalid && equipoForm.get('estado')?.touched) {
+              <div class="invalid-feedback">El estado es requerido</div>
+            }
+          </div>
+
+          <!-- Campos de Baja (solo si estado = BAJA) -->
+          @if (mostrarCamposBaja()) {
+            <div class="col-12 mt-2">
+              <div class="alert alert-danger border-0">
+                <h6 class="mb-2"><i class="bi bi-exclamation-triangle me-2"></i>Registro de Baja</h6>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold">Fecha de Baja *</label>
+                    <input type="date" class="form-control" formControlName="fechaBaja"
+                           [class.is-invalid]="equipoForm.get('fechaBaja')?.invalid && equipoForm.get('fechaBaja')?.touched">
+                    @if (equipoForm.get('fechaBaja')?.invalid && equipoForm.get('fechaBaja')?.touched) {
+                      <div class="invalid-feedback">La fecha de baja es requerida</div>
+                    }
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold">Motivo de Baja *</label>
+                    <textarea class="form-control" formControlName="motivoBaja" rows="2"
+                              placeholder="Describa el motivo de baja..."
+                              [class.is-invalid]="equipoForm.get('motivoBaja')?.invalid && equipoForm.get('motivoBaja')?.touched">
+                    </textarea>
+                    @if (equipoForm.get('motivoBaja')?.invalid && equipoForm.get('motivoBaja')?.touched) {
+                      <div class="invalid-feedback">El motivo de baja es requerido</div>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Características -->
+          <div class="col-12 mt-3">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-gear me-2"></i>Características</h6>
+          </div>
+
+          <!-- Material -->
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Material</label>
+            <input type="text" class="form-control shadow-sm" formControlName="material"
+                   placeholder="Ej: Acero, Aluminio, Fibra">
+          </div>
+
+          <!-- Marca -->
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Marca</label>
+            <input type="text" class="form-control shadow-sm" formControlName="marca"
+                   placeholder="Ej: Stihl, Husqvarna, Bosch">
+          </div>
+
+          <!-- Modelo -->
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Modelo</label>
+            <input type="text" class="form-control shadow-sm" formControlName="modelo"
+                   placeholder="Ej: MS-250, XT-5000">
+          </div>
+
+          <!-- Color -->
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Color</label>
+            <input type="text" class="form-control shadow-sm" formControlName="color"
+                   placeholder="Ej: Rojo, Negro, Amarillo">
+          </div>
+
+          <!-- Especificación -->
+          <div class="col-md-12">
+            <label class="form-label fw-semibold">Especificación</label>
+            <input type="text" class="form-control shadow-sm" formControlName="especificacion"
+                   placeholder="Especificaciones técnicas del equipo...">
+          </div>
+
+          <!-- Observaciones -->
+          <div class="col-12">
+            <label class="form-label fw-semibold">Observaciones</label>
+            <textarea class="form-control shadow-sm" formControlName="observaciones" rows="3"
+                      placeholder="Observaciones adicionales sobre el equipo...">
+            </textarea>
+          </div>
+
+          <!-- Asignado (Solo lectura) -->
+          <div class="col-12 mt-2">
+            <div class="form-check bg-light border rounded px-4 py-2">
+              <input type="checkbox" class="form-check-input" id="asignado"
+                     [checked]="equipoForm.get('asignado')?.value" disabled>
+              <label class="form-check-label fw-semibold text-muted" for="asignado">
+                Asignado (Este campo lo modifica el módulo de Asignaciones)
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="mt-4 d-flex gap-2 justify-content-end border-top pt-3">
+          <button type="button" class="btn btn-light border px-4" (click)="cancelar()">
+            <i class="bi bi-x-circle me-1"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary px-4 shadow-sm" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner-border spinner-border-sm me-2"></span> Guardando...
+            } @else {
+              <i class="bi bi-save-fill me-1"></i> {{ isEditMode() ? 'Actualizar Cambios' : 'Crear Equipo' }}
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

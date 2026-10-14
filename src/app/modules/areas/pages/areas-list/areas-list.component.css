@@ -1,0 +1,82 @@
+.areas-container .card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.areas-container .card-header {
+  background-color: transparent;
+  padding: 1rem 1.5rem;
+}
+
+.areas-container .table thead th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.areas-container .table tbody td {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+}
+
+.areas-container .table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.areas-container .table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.areas-container .badge {
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.areas-container .btn-group .btn {
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+
+.areas-container .btn-group .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.areas-container .form-select-sm {
+  font-size: 0.875rem;
+  padding: 0.25rem 2rem 0.25rem 0.75rem;
+}
+
+.areas-container .pagination .btn {
+  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+}
+
+.areas-container .pagination .btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.areas-container .input-group .form-control {
+  font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+  .areas-container .table-responsive {
+    font-size: 0.85rem;
+  }
+
+  .areas-container .btn-group .btn {
+    padding: 0.2rem 0.35rem;
+    font-size: 0.8rem;
+  }
+
+  .areas-container .card-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch !important;
+  }
+}

@@ -1,0 +1,166 @@
+<div class="equipo-container">
+  <!-- Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <h1 class="h2 mb-0 fw-bold text-dark">
+      <i class="bi bi-tools text-primary me-2"></i> Inventario de Equipos
+      <span class="badge bg-secondary ms-2 fs-6">{{ filteredEquipos().length }}</span>
+    </h1>
+    <button class="btn btn-primary shadow-sm" routerLink="/equipos/nuevo">
+      <i class="bi bi-plus-circle-fill me-1"></i> Nuevo Equipo
+    </button>
+  </div>
+
+  <!-- Barra de búsqueda -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body bg-white rounded">
+      <div class="input-group">
+        <span class="input-group-text bg-light border-end-0 text-muted">
+          <i class="bi bi-search"></i>
+        </span>
+        <input type="text" 
+               class="form-control bg-light border-start-0 ps-0" 
+               placeholder="Buscar por código, serie, nombre, tipo, compañía, área o estado..."
+               [ngModel]="searchTerm()"
+               (input)="onSearchChange($event)">
+        @if (searchTerm()) {
+          <button class="btn btn-outline-secondary border-start-0" type="button" 
+                  (click)="searchTerm.set(''); paginaActual.set(1)">
+            <i class="bi bi-x-circle-fill text-muted"></i>
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-2">Cargando inventario de equipos...</p>
+    </div>
+  } @else {
+    @if (filteredEquipos().length === 0) {
+      <div class="text-center py-5 bg-white rounded shadow-sm border">
+        <i class="bi bi-inbox display-1 text-muted"></i>
+        <p class="text-muted mt-3 fs-5">No hay equipos registrados</p>
+        <button class="btn btn-primary mt-2" routerLink="/equipos/nuevo">
+          <i class="bi bi-plus-circle me-1"></i> Registrar Primer Equipo
+        </button>
+      </div>
+    } @else {
+      <div class="card shadow-sm border-0">
+        <!-- Selector de cantidad por página -->
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom-0">
+          <div class="d-flex align-items-center gap-2">
+            <span class="text-muted small">Mostrar</span>
+            <select class="form-select form-select-sm" style="width: auto;" 
+                    [ngModel]="tamanoPagina()" 
+                    (ngModelChange)="onTamanoPaginaChange($event)">
+              @for (opcion of opcionesTamano; track opcion) {
+                <option [value]="opcion">{{ opcion }} registros</option>
+              }
+            </select>
+          </div>
+          <span class="text-muted small">
+            Mostrando del {{ (paginaActual() - 1) * tamanoPagina() + 1 }} al 
+            {{ Math.min(paginaActual() * tamanoPagina(), filteredEquipos().length) }} de {{ filteredEquipos().length }}
+          </span>
+        </div>
+
+        <!-- Tabla -->
+        <div class="card-body p-0">
+          <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+            <table class="table table-lg table-hover align-middle mb-0 text-nowrap">
+              <thead class="table-light text-uppercase fs-6 text-muted sticky-top shadow-sm" style="z-index: 1;">
+                <tr>
+                  <th class="ps-4" style="min-width: 110px;">Código CGBVP</th>
+                  <th style="min-width: 110px;">N° Serie</th>
+                  <th style="min-width: 140px;">Nombre</th>
+                  <th style="min-width: 120px;">Tipo</th>
+                  <th style="min-width: 100px;">Tipo Inv.</th>
+                  <th style="min-width: 140px;">Compañía</th>
+                  <th style="min-width: 120px;">Área</th>
+                  <th style="min-width: 100px;">Stock</th>
+                  <th style="min-width: 110px;">Estado</th>
+                  <th style="min-width: 90px;">Asignado</th>
+                  <th class="text-end pe-4" style="min-width: 130px;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (equipo of equiposPaginados(); track equipo.id) {
+                  <tr>
+                    <td class="ps-4"><strong>{{ equipo.codigoCgbvp || 'N/A' }}</strong></td>
+                    <td>{{ equipo.numeroSerie || 'N/A' }}</td>
+                    <td>{{ formatearNombreEquipo(equipo.nombreEquipo) }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ formatearTipoEquipo(equipo.tipoEquipo) }}</span></td>
+                    <td>{{ formatearTipoInventario(equipo.tipoInventario) }}</td>
+                    <td>{{ formatearCompania(equipo.compania) }}</td>
+                    <td>{{ equipo.areaNombre || '-' }}</td>
+                    <td>{{ equipo.stock }}</td>
+                    <td>
+                      <span class="badge shadow-sm px-3 py-2 fw-bold" [class]="getEstadoEquipoBadgeClass(equipo.estado)">
+                        {{ equipo.estado }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge shadow-sm px-3 py-2 fw-bold" [class]="getAsignadoBadgeClass(equipo.asignado)">
+                        {{ equipo.asignado ? 'Sí' : 'No' }}
+                      </span>
+                    </td>
+                    <td class="text-end pe-4">
+                      <div class="btn-group btn-group-sm shadow-sm">
+                        <button class="btn btn-outline-secondary" (click)="equipo.id && verDetalle(equipo.id)" title="Ver Detalle">
+                          <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-outline-primary" (click)="equipo.id && editar(equipo.id)" title="Editar">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-danger" (click)="equipo.id && eliminar(equipo.id, formatearNombreEquipo(equipo.nombreEquipo))" title="Eliminar">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Paginación -->
+        <div class="card-footer bg-white py-3 d-flex justify-content-center align-items-center border-top">
+          <nav aria-label="Navegación de equipos">
+            <ul class="pagination pagination-sm mb-0 gap-1">
+              <li class="page-item" [class.disabled]="paginaActual() === 1">
+                <button class="btn btn-sm btn-light border" (click)="cambiarPagina(1)" [disabled]="paginaActual() === 1">
+                  <i class="bi bi-chevron-double-left"></i> Primero
+                </button>
+              </li>
+              <li class="page-item" [class.disabled]="paginaActual() === 1">
+                <button class="btn btn-sm btn-light border" (click)="cambiarPagina(paginaActual() - 1)" [disabled]="paginaActual() === 1">
+                  <i class="bi bi-chevron-left"></i>
+                </button>
+              </li>
+              <li class="page-item disabled">
+                <span class="btn btn-sm btn-primary text-white fw-bold border px-3">
+                  Pág. {{ paginaActual() }} de {{ totalPaginas() }}
+                </span>
+              </li>
+              <li class="page-item" [class.disabled]="paginaActual() === totalPaginas()">
+                <button class="btn btn-sm btn-light border" (click)="cambiarPagina(paginaActual() + 1)" [disabled]="paginaActual() === totalPaginas()">
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+              </li>
+              <li class="page-item" [class.disabled]="paginaActual() === totalPaginas()">
+                <button class="btn btn-sm btn-light border" (click)="cambiarPagina(totalPaginas())" [disabled]="paginaActual() === totalPaginas()">
+                  Último <i class="bi bi-chevron-double-right"></i>
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    }
+  }
+</div>

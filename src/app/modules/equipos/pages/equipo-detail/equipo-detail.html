@@ -1,0 +1,211 @@
+<div class="equipo-detail-container">
+  <!-- Botón Volver -->
+  <div class="mb-3">
+    <button class="btn btn-outline-secondary" (click)="volver()">
+      <i class="bi bi-arrow-left"></i>
+      Volver
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-2 small">Cargando información del equipo...</p>
+    </div>
+  }
+
+  @if (!loading() && equipo()) {
+    <div class="card shadow-sm border-0">
+      <!-- Header -->
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h4 class="card-title mb-0 fw-bold text-dark">
+          <i class="bi bi-tools text-primary me-2"></i>
+          {{ formatearNombreEquipo(equipo()!.nombreEquipo) }}
+          <span class="badge ms-2" [class]="getEstadoEquipoBadgeClass(equipo()!.estado)">
+            {{ equipo()!.estado }}
+          </span>
+        </h4>
+        <div>
+          <button class="btn btn-primary me-2" (click)="editar()">
+            <i class="bi bi-pencil"></i>
+            Editar
+          </button>
+          <button class="btn btn-danger" (click)="eliminar()">
+            <i class="bi bi-trash"></i>
+            Eliminar
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="row">
+          <!-- Columna Izquierda -->
+          <div class="col-md-6">
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Tipo Inventario:</th>
+                <td><span class="badge bg-info text-white">{{ formatearTipoInventario(equipo()!.tipoInventario) }}</span></td>
+              </tr>
+
+              <!-- Campos INDIVIDUAL -->
+              @if (esIndividual()) {
+                <tr>
+                  <th>Código CGBVP:</th>
+                  <td><strong>{{ equipo()!.codigoCgbvp }}</strong></td>
+                </tr>
+                <tr>
+                  <th>Número de Serie:</th>
+                  <td><strong>{{ equipo()!.numeroSerie }}</strong></td>
+                </tr>
+              }
+
+              <!-- Campos MULTIPLE -->
+              @if (esMultiple()) {
+                <tr>
+                  <th>Stock:</th>
+                  <td><strong>{{ equipo()!.stock }}</strong></td>
+                </tr>
+                <tr>
+                  <th>Stock Mínimo:</th>
+                  <td>{{ equipo()!.stockMinimo }}</td>
+                </tr>
+              }
+
+              <!-- Campos comunes -->
+              <tr>
+                <th>Nombre Equipo:</th>
+                <td>{{ formatearNombreEquipo(equipo()!.nombreEquipo) }}</td>
+              </tr>
+              <tr>
+                <th>Tipo Equipo:</th>
+                <td><span class="badge bg-light text-dark border">{{ formatearTipoEquipo(equipo()!.tipoEquipo) }}</span></td>
+              </tr>
+              <tr>
+                <th>Compañía:</th>
+                <td>{{ formatearCompania(equipo()!.compania) }}</td>
+              </tr>
+              <tr>
+                <th>Área:</th>
+                <td>{{ equipo()?.areaNombre || '-' }}</td>
+              </tr>
+              <tr>
+                <th>Asignado:</th>
+                <td>
+                  <span class="badge shadow-sm px-3 py-2 fw-bold" [class]="getAsignadoBadgeClass(equipo()!.asignado)">
+                    {{ equipo()!.asignado ? 'Sí' : 'No' }}
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Columna Derecha -->
+          <div class="col-md-6">
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Fecha de Incorporación:</th>
+                <td>{{ formatFecha(equipo()!.fechaIncorporacion) }}</td>
+              </tr>
+              <tr>
+                <th>Vida Útil:</th>
+                <td>{{ equipo()!.vidaUtilAnios }} años</td>
+              </tr>
+              <tr>
+                <th>Estado:</th>
+                <td>
+                  <span class="badge shadow-sm px-3 py-2 fw-bold" [class]="getEstadoEquipoBadgeClass(equipo()!.estado)">
+                    {{ equipo()!.estado }}
+                  </span>
+                </td>
+              </tr>
+
+              <!-- Campos de baja (solo si estado = BAJA) -->
+              @if (equipo()!.estado === 'BAJA') {
+                <tr>
+                  <th>Fecha de Baja:</th>
+                  <td>{{ formatFecha(equipo()!.fechaBaja) }}</td>
+                </tr>
+                <tr>
+                  <th>Motivo de Baja:</th>
+                  <td>{{ equipo()!.motivoBaja || 'N/A' }}</td>
+                </tr>
+              }
+
+              <tr>
+                <th>Material:</th>
+                <td>{{ equipo()!.material || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Marca:</th>
+                <td>{{ equipo()!.marca || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Modelo:</th>
+                <td>{{ equipo()!.modelo || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Color:</th>
+                <td>{{ equipo()!.color || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Especificación:</th>
+                <td>{{ equipo()!.especificacion || 'N/A' }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Observaciones -->
+        @if (equipo()!.observaciones) {
+          <div class="row mt-3">
+            <div class="col-12">  
+              <hr>
+              <h6 class="text-muted mb-2"><i class="bi bi-chat me-2"></i>Observaciones</h6>
+              <div class="p-3 bg-light rounded">
+                {{ equipo()!.observaciones }}
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Información Adicional -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <hr>
+            <h6 class="text-muted mb-2"><i class="bi bi-info-circle me-2"></i>Información Adicional</h6>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">ID Equipo</small>
+                    <strong>#{{ equipo()!.id }}</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">Estado Asignación</small>
+                    <span class="badge" [class]="getAsignadoBadgeClass(equipo()!.asignado)">
+                      {{ equipo()!.asignado ? 'Asignado' : 'Disponible' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">Tipo Inventario</small>
+                    <strong>{{ formatearTipoInventario(equipo()!.tipoInventario) }}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

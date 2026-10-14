@@ -1,0 +1,286 @@
+<div class="epp-form-container">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3">
+      <h4 class="card-title mb-0 fw-bold text-dark">
+        <i class="bi text-primary me-2" [class.bi-plus-circle]="!isEditMode()" [class.bi-pencil-square]="isEditMode()"></i>
+        {{ isEditMode() ? 'Editar EPP' : 'Nuevo EPP' }}
+      </h4>
+    </div>
+    <div class="card-body p-4">
+      @if (loading()) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="text-muted mt-2 small">Cargando información del EPP...</p>
+        </div>
+      }
+
+      <form [formGroup]="eppForm" (ngSubmit)="onSubmit()">
+        <div class="row g-4">
+
+          <!-- Identificación -->
+          <div class="col-12">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-tag me-2"></i>Identificación</h6>
+          </div>
+
+          <!-- Código CGBVP -->
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Código CGBVP *</label>
+            <input type="text" class="form-control shadow-sm" formControlName="codigoCgbvp"
+                   placeholder="Ej: A19066"
+                   [class.is-invalid]="eppForm.get('codigoCgbvp')?.invalid && eppForm.get('codigoCgbvp')?.touched">
+            @if (eppForm.get('codigoCgbvp')?.invalid && eppForm.get('codigoCgbvp')?.touched) {
+              <div class="invalid-feedback">El código es requerido</div>
+            }
+          </div>
+
+          <!-- Número de Serie -->
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Número de Serie *</label>
+            <input type="text" class="form-control shadow-sm" formControlName="numeroSerie"
+                   placeholder="Ej: SN-2024-001"
+                   [class.is-invalid]="eppForm.get('numeroSerie')?.invalid && eppForm.get('numeroSerie')?.touched">
+            @if (eppForm.get('numeroSerie')?.invalid && eppForm.get('numeroSerie')?.touched) {
+              <div class="invalid-feedback">El número de serie es requerido</div>
+            }
+          </div>
+
+          <!-- Tipo EPP -->
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Tipo EPP *</label>
+            <select class="form-select shadow-sm" formControlName="tipoEpp"
+                    [class.is-invalid]="eppForm.get('tipoEpp')?.invalid && eppForm.get('tipoEpp')?.touched">
+              <option value="" disabled>Seleccione tipo...</option>
+              @for (tipo of tiposEpp; track tipo) {
+                <option [value]="tipo">{{ formatearTipoEpp(tipo) }}</option>
+              }
+            </select>
+            @if (eppForm.get('tipoEpp')?.invalid && eppForm.get('tipoEpp')?.touched) {
+              <div class="invalid-feedback">El tipo es requerido</div>
+            }
+          </div>
+
+          <!-- Nombre EPP con Buscador Nativo HTML5 -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Nombre EPP *</label>
+            
+            <!-- El input se conecta a la lista mediante el atributo list -->
+            <input type="text" 
+                   class="form-control shadow-sm" 
+                   formControlName="nombreEpp"
+                   list="listaNombresEpp"
+                   placeholder="Escriba para buscar o filtrar EPP..."
+                   [class.is-invalid]="eppForm.get('nombreEpp')?.invalid && eppForm.get('nombreEpp')?.touched">
+            
+            <!-- El catálogo gigante se renderiza aquí de forma oculta hasta que el usuario escribe -->
+            <datalist id="listaNombresEpp">
+              @for (nombre of nombresEpp; track nombre) {
+                <!-- Guardamos el Enum técnico en el value y mostramos el texto legible al lado -->
+                <option [value]="nombre">{{ formatearNombreEpp(nombre) }}</option>
+              }
+            </datalist>
+
+            @if (eppForm.get('nombreEpp')?.invalid && eppForm.get('nombreEpp')?.touched) {
+              <div class="invalid-feedback">El nombre es requerido</div>
+            }
+          </div>
+
+          <!-- Compañía -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Compañía *</label>
+            <select class="form-select shadow-sm" formControlName="compania"
+                    [class.is-invalid]="eppForm.get('compania')?.invalid && eppForm.get('compania')?.touched">
+              <option value="" disabled>Seleccione compañía...</option>
+              @for (compania of companias; track compania) {
+                <option [value]="compania">{{ formatearCompania(compania) }}</option>
+              }
+            </select>
+            @if (eppForm.get('compania')?.invalid && eppForm.get('compania')?.touched) {
+              <div class="invalid-feedback">La compañía es requerida</div>
+            }
+          </div>
+
+          <!-- Información General -->
+          <div class="col-12 mt-3">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-info-circle me-2"></i>Información General</h6>
+          </div>
+
+          <!-- Fecha Incorporación -->
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Fecha de Incorporación *</label>
+            <input type="date" class="form-control shadow-sm" formControlName="fechaIncorporacion"
+                   [class.is-invalid]="eppForm.get('fechaIncorporacion')?.invalid && eppForm.get('fechaIncorporacion')?.touched">
+            @if (eppForm.get('fechaIncorporacion')?.invalid && eppForm.get('fechaIncorporacion')?.touched) {
+              <div class="invalid-feedback">La fecha de incorporación es requerida</div>
+            }
+          </div>
+
+         <!-- Vida Útil (Años) -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Vida Útil (Años) *</label>
+            <input type="number" class="form-control shadow-sm" formControlName="vidaUtilAnios"
+                   placeholder="Ej. 10"
+                   [class.is-invalid]="eppForm.get('vidaUtilAnios')?.invalid && eppForm.get('vidaUtilAnios')?.touched">
+            
+            @if (eppForm.get('vidaUtilAnios')?.invalid && eppForm.get('vidaUtilAnios')?.touched) {
+              <div class="invalid-feedback">
+                @if (eppForm.get('vidaUtilAnios')?.errors?.['required']) {
+                  La vida útil es requerida.
+                }
+                @if (eppForm.get('vidaUtilAnios')?.errors?.['min']) {
+                  La vida útil debe ser mayor a cero.
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Estado -->
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Estado *</label>
+            <select class="form-select shadow-sm" formControlName="estado"
+                    [class.is-invalid]="eppForm.get('estado')?.invalid && eppForm.get('estado')?.touched">
+              @for (estado of estadosEpp; track estado) {
+                <option [value]="estado">{{ formatearEstadoEpp(estado) }}</option>
+              }
+            </select>
+            @if (eppForm.get('estado')?.invalid && eppForm.get('estado')?.touched) {
+              <div class="invalid-feedback">El estado es requerido</div>
+            }
+          </div>
+
+         <!-- Área -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Área *</label>
+          <select class="form-select shadow-sm" formControlName="areaId"
+                  [class.is-invalid]="eppForm.get('areaId')?.invalid && eppForm.get('areaId')?.touched">
+            <option [ngValue]="null" disabled>Seleccione área...</option>
+            @for (area of areas(); track area.id) {
+              <option [ngValue]="area.id">{{ area.nombreArea }}</option>
+            }
+          </select>
+          @if (eppForm.get('areaId')?.invalid && eppForm.get('areaId')?.touched) {
+            <div class="invalid-feedback">El área es requerida</div>
+          }
+        </div>
+
+        <!-- Ubicación (NUEVO) -->
+        <!-- Ubicación Física -->
+        <div class="col-md-6">
+          <app-select-ubicacion
+            id="ubicacionId"
+            label="Ubicación Física *"
+            formControlName="ubicacionId"
+            [required]="true"
+            [soloActivas]="false"
+            [invalid]="eppForm.get('ubicacionId')?.invalid || false"
+            [touched]="eppForm.get('ubicacionId')?.touched || false"
+            errorMessage="La ubicación física de la herramienta es requerida">
+          </app-select-ubicacion>
+        </div>
+
+
+
+          <!-- Campos de Baja (solo si estado = BAJA) -->
+          @if (mostrarCamposBaja()) {
+            <div class="col-12 mt-2">
+              <div class="alert alert-danger border-0">
+                <h6 class="mb-2"><i class="bi bi-exclamation-triangle me-2"></i>Registro de Baja</h6>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold">Fecha de Baja *</label>
+                    <input type="date" class="form-control" formControlName="fechaBaja"
+                           [class.is-invalid]="eppForm.get('fechaBaja')?.invalid && eppForm.get('fechaBaja')?.touched">
+                    @if (eppForm.get('fechaBaja')?.invalid && eppForm.get('fechaBaja')?.touched) {
+                      @if (eppForm.get('fechaBaja')?.errors?.['required']) {
+                        <div class="invalid-feedback">La fecha de baja es requerida</div>
+                      }
+                    }
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold">Motivo de Baja *</label>
+                    <textarea class="form-control" formControlName="motivoBaja" rows="2"
+                              placeholder="Describa el motivo de baja..."
+                              [class.is-invalid]="eppForm.get('motivoBaja')?.invalid && eppForm.get('motivoBaja')?.touched">
+                    </textarea>
+                    @if (eppForm.get('motivoBaja')?.invalid && eppForm.get('motivoBaja')?.touched) {
+                      @if (eppForm.get('motivoBaja')?.errors?.['required']) {
+                        <div class="invalid-feedback">El motivo de baja es requerido</div>
+                      }
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Características -->
+          <div class="col-12 mt-3">
+            <h6 class="text-muted border-bottom pb-2"><i class="bi bi-gear me-2"></i>Características</h6>
+          </div>
+
+          <!-- Talla -->
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Talla</label>
+            <input type="text" class="form-control shadow-sm" formControlName="talla"
+                   placeholder="Ej: M, L, XL, 42">
+          </div>
+
+          <!-- Material -->
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Material</label>
+            <input type="text" class="form-control shadow-sm" formControlName="material"
+                   placeholder="Ej: Nomex, Kevlar, Cuero">
+          </div>
+
+          <!-- Marca -->
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Marca</label>
+            <input type="text" class="form-control shadow-sm" formControlName="marca"
+                   placeholder="Ej: FirePro, MSA, Scott">
+          </div>
+
+          <!-- Color -->
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Color</label>
+            <input type="text" class="form-control shadow-sm" formControlName="color"
+                   placeholder="Ej: Amarillo, Negro, Azul">
+          </div>
+
+          <!-- Observaciones -->
+          <div class="col-12">
+            <label class="form-label fw-semibold">Observaciones</label>
+            <textarea class="form-control shadow-sm" formControlName="observaciones" rows="3"
+                      placeholder="Observaciones adicionales sobre el EPP...">
+            </textarea>
+          </div>
+
+          <!-- Asignado (Solo lectura) -->
+          <div class="col-12 mt-2">
+            <div class="form-check bg-light border rounded px-4 py-2">
+              <input type="checkbox" class="form-check-input" id="asignado"
+                     [checked]="false" disabled>
+              <label class="form-check-label fw-semibold text-muted" for="asignado">
+                Asignado (Este campo lo modifica el módulo de Asignaciones)
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="mt-4 d-flex gap-2 justify-content-end border-top pt-3">
+          <button type="button" class="btn btn-light border px-4" (click)="cancelar()">
+            <i class="bi bi-x-circle me-1"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary px-4 shadow-sm" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner-border spinner-border-sm me-2"></span> Guardando...
+            } @else {
+              <i class="bi bi-save-fill me-1"></i> {{ isEditMode() ? 'Actualizar Cambios' : 'Crear EPP' }}
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

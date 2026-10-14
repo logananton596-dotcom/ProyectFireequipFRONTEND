@@ -1,0 +1,237 @@
+<div class="asignacion-detail-container">
+  <!-- Botón Volver -->
+  <div class="mb-3">
+    <button class="btn btn-outline-secondary" (click)="volver()">
+      <i class="bi bi-arrow-left"></i>
+      Volver
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-2 small">Cargando información de la asignación...</p>
+    </div>
+  }
+
+  @if (!loading() && asignacion()) {
+    <div class="card shadow-sm border-0">
+      <!-- Header -->
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h4 class="card-title mb-0 fw-bold text-dark">
+          <i class="bi bi-arrow-left-right text-primary me-2"></i>
+          Asignación #{{ asignacion()!.id }}
+          <span class="badge ms-2" [class]="getEstadoAsignacionBadgeClass(asignacion()!.estado)">
+            {{ formatearEstadoAsignacion(asignacion()!.estado) }}
+          </span>
+        </h4>
+        <div>
+          @if (esEditable()) {
+            <button class="btn btn-success me-2" (click)="devolver()">
+              <i class="bi bi-arrow-return-left me-1"></i> Devolver
+            </button>
+          }
+          <button class="btn btn-primary me-2" (click)="editar()" [disabled]="!esEditable()">
+            <i class="bi bi-pencil"></i>
+            Editar
+          </button>
+          <button class="btn btn-danger" (click)="eliminar()">
+            <i class="bi bi-trash"></i>
+            Eliminar
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="row">
+          <!-- Columna Izquierda -->
+          <div class="col-md-6">
+            <h6 class="text-muted border-bottom pb-2 mb-3">
+              <i class="bi bi-box me-2"></i>Recurso Asignado
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Tipo Recurso:</th>
+                <td><span class="badge bg-info text-white">{{ getTipoRecurso(asignacion()!) }}</span></td>
+              </tr>
+              <tr>
+                <th>Nombre:</th>
+                <td><strong>{{ getNombreRecursoCached(asignacion()!) }}</strong></td>
+              </tr>
+              <tr>
+                <th>Código:</th>
+                <td>{{ getCodigoRecursoCached(asignacion()!) }}</td>
+              </tr>
+              <tr>
+                <th>Estado del Recurso:</th>
+                <td>
+                  @if (asignacion()!.equipo) {
+                    <span class="badge" [class.bg-success]="asignacion()!.equipo?.estado === 'OPERATIVO'"
+                          [class.bg-warning]="asignacion()!.equipo?.estado === 'MANTENIMIENTO'"
+                          [class.bg-danger]="asignacion()!.equipo?.estado === 'BAJA'">
+                      {{ asignacion()!.equipo?.estado }}
+                    </span>
+                  }
+                  @if (asignacion()!.epp) {
+                    <span class="badge" [class.bg-success]="asignacion()!.epp?.estado === 'OPERATIVO'"
+                          [class.bg-warning]="asignacion()!.epp?.estado === 'MANTENIMIENTO'"
+                          [class.bg-danger]="asignacion()!.epp?.estado === 'BAJA'">
+                      {{ asignacion()!.epp?.estado }}
+                    </span>
+                  }
+                  @if (asignacion()!.bien) {
+                    <span class="badge" [class.bg-success]="asignacion()!.bien?.estado === 'OPERATIVO'"
+                          [class.bg-warning]="asignacion()!.bien?.estado === 'MANTENIMIENTO'"
+                          [class.bg-danger]="asignacion()!.bien?.estado === 'BAJA'">
+                      {{ asignacion()!.bien?.estado }}
+                    </span>
+                  }
+                </td>
+              </tr>
+            </table>
+
+            <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">
+              <i class="bi bi-person me-2"></i>Destinatario
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Tipo Destino:</th>
+                <td><span class="badge bg-secondary text-white">{{ asignacion()!.tipoDestino }}</span></td>
+              </tr>
+              <tr>
+                <th>Nombre:</th>
+                <td><strong>{{ getNombreDestinatarioCached(asignacion()!) }}</strong></td>
+              </tr>
+              <tr>
+                <th>Código:</th>
+                <td>{{ getCodigoDestinatarioCached(asignacion()!) }}</td>
+              </tr>
+              @if (asignacion()!.tipoDestino === 'BOMBERO' && bombero()) {
+                <tr>
+                  <th>Estado Bombero:</th>
+                  <td>
+                    <span class="badge" [class.bg-success]="bombero()!.estado === 'ACTIVO'"
+                          [class.bg-warning]="bombero()!.estado === 'RESERVA'"
+                          [class.bg-danger]="bombero()!.estado === 'BAJA'">
+                      {{ bombero()!.estado }}
+                    </span>
+                  </td>
+                </tr>
+              }
+              @if (asignacion()!.tipoDestino === 'VEHICULO' && vehiculo()) {
+                <tr>
+                  <th>Compartimiento:</th>
+                  <td>{{ getCompartimientoNombreCached(asignacion()!) }}</td>
+                </tr>
+              }
+            </table>
+          </div>
+
+          <!-- Columna Derecha -->
+          <div class="col-md-6">
+            <h6 class="text-muted border-bottom pb-2 mb-3">
+              <i class="bi bi-calendar me-2"></i>Fechas
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Fecha Asignación:</th>
+                <td>{{ formatFecha(asignacion()!.fechaAsignacion) }}</td>
+              </tr>
+              <tr>
+                <th>Fecha Fin:</th>
+                <td>{{ formatFecha(asignacion()!.fechaFin) }}</td>
+              </tr>
+              <tr>
+                <th>Fecha Devolución:</th>
+                <td>{{ formatFecha(asignacion()!.fechaDevolucion) }}</td>
+              </tr>
+            </table>
+
+            <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">
+              <i class="bi bi-info-circle me-2"></i>Información Adicional
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Estado:</th>
+                <td>
+                  <span class="badge shadow-sm px-3 py-2 fw-bold" 
+                        [class]="getEstadoAsignacionBadgeClass(asignacion()!.estado)">
+                    {{ formatearEstadoAsignacion(asignacion()!.estado) }}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <th>Activo:</th>
+                <td>
+                  <span class="badge" [class.bg-success]="asignacion()!.activo" 
+                        [class.bg-secondary]="!asignacion()!.activo">
+                    {{ asignacion()!.activo ? 'Sí' : 'No' }}
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Observaciones -->
+        @if (asignacion()!.observaciones) {
+          <div class="row mt-3">
+            <div class="col-12">
+              <hr>
+              <h6 class="text-muted mb-2"><i class="bi bi-chat me-2"></i>Observaciones</h6>
+              <div class="p-3 bg-light rounded">
+                {{ asignacion()!.observaciones }}
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Información Adicional en Cards -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <hr>
+            <h6 class="text-muted mb-2"><i class="bi bi-grid me-2"></i>Resumen</h6>
+            <div class="row g-3">
+              <div class="col-md-3">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">ID Asignación</small>
+                    <strong>#{{ asignacion()!.id }}</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">Estado</small>
+                    <span class="badge" [class]="getEstadoAsignacionBadgeClass(asignacion()!.estado)">
+                      {{ formatearEstadoAsignacion(asignacion()!.estado) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">Recurso</small>
+                    <strong>{{ getTipoRecurso(asignacion()!) }}</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center py-2">
+                    <small class="text-muted d-block">Destino</small>
+                    <strong>{{ asignacion()!.tipoDestino }}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

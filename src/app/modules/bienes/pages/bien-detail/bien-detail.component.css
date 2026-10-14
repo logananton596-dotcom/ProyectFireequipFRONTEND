@@ -1,0 +1,73 @@
+.bien-detail-container .card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.bien-detail-container .card-header {
+  border-bottom: 1px solid #e9ecef;
+  padding: 1.25rem 1.5rem;
+}
+
+.bien-detail-container .card-header .card-title {
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.bien-detail-container .table {
+  margin-bottom: 0;
+}
+
+.bien-detail-container .table th {
+  font-weight: 600;
+  color: #6c757d;
+  padding: 0.5rem 0;
+  width: 40%;
+}
+
+.bien-detail-container .table td {
+  padding: 0.5rem 0;
+  color: #212529;
+}
+
+.bien-detail-container .table tr {
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.bien-detail-container .table tr:last-child {
+  border-bottom: none;
+}
+
+.bien-detail-container .bg-light {
+  background-color: #f8f9fa !important;
+}
+
+.bien-detail-container .card.bg-light {
+  transition: all 0.2s ease;
+}
+
+.bien-detail-container .badge {
+  font-weight: 500;
+}
+
+.bien-detail-container hr {
+  margin: 1.5rem 0;
+  opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+  .bien-detail-container .card-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch !important;
+  }
+  .bien-detail-container .card-header .d-flex {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .bien-detail-container .card-header .d-flex button {
+    width: 100%;
+  }
+  .bien-detail-container .row .col-md-3 {
+    margin-bottom: 0.5rem;
+  }
+}
