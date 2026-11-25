@@ -163,23 +163,19 @@
           }
         </div>
 
-          <div class="col-md-6">
-            <label class="form-label fw-semibold">Ubicación Física *</label>
-            <select class="form-select shadow-sm" formControlName="ubicacionId"
-                    [class.is-invalid]="bienForm.get('ubicacionId')?.invalid && bienForm.get('ubicacionId')?.touched">
-              <option value="" disabled>Seleccione ubicación...</option>
-              @for (ubicacion of ubicaciones(); track ubicacion.id) {
-                <option [value]="ubicacion.id">{{ getUbicacionDisplay(ubicacion) }}</option>
-              }
-            </select>
-            @if (bienForm.get('ubicacionId')?.invalid && bienForm.get('ubicacionId')?.touched) {
-              <div class="invalid-feedback">La ubicación es requerida</div>
-            }
-            @if (ubicaciones.length === 0) {
-              <small class="text-warning">No hay ubicaciones activas disponibles</small>
-            }
-          </div>
-
+      <!-- Ubicación Física -->
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">Ubicación Física *</label>
+        <app-select-ubicacion
+          formControlName="ubicacionId"
+          [requerido]="true"
+          [mostrarInactivas]="false"
+          placeholder="Seleccione ubicación...">
+        </app-select-ubicacion>
+        @if (bienForm.get('ubicacionId')?.invalid && bienForm.get('ubicacionId')?.touched) {
+          <div class="text-danger small mt-1">La ubicación física es requerida</div>
+        }
+      </div>
           <!-- ============ INFORMACIÓN ADICIONAL ============ -->
           <div class="col-12 mt-3">
             <h6 class="text-muted border-bottom pb-2"><i class="bi bi-info-circle me-2"></i>Información Adicional</h6>

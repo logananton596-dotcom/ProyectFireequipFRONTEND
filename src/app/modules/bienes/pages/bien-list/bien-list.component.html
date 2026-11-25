@@ -19,7 +19,7 @@
         </span>
         <input type="text" 
                class="form-control bg-light border-start-0 ps-0" 
-               placeholder="Buscar por código, nombre, tipo, área, marca o modelo..."
+               placeholder="Buscar por código, nombre, tipo, área, ubicacion, marca o modelo..."
                [ngModel]="searchTerm()"
                (input)="onSearchChange($event)">
         @if (searchTerm()) {
@@ -90,7 +90,7 @@
                     <td>{{ bien.nombre }}</td>
                     <td><span class="badge bg-light text-dark border">{{ formatearTipoBien(bien.tipoBien) }}</span></td>
                     <td>{{ bien.areaNombre || '-' }}</td>
-                    <td>{{ getUbicacionDisplay(bien.ubicacionId) }}</td>
+                    <td [title]="bien.ubicacionDisplay || ''">{{ bien.ubicacionDisplay || '-' }}</td>
                     <td>
                       <span class="badge shadow-sm px-3 py-2 fw-bold" [class]="getEstadoBienBadgeClass(bien.estado)">
                         {{ formatearEstadoBien(bien.estado) }}

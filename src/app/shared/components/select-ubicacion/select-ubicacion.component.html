@@ -1,0 +1,21 @@
+<select
+  class="form-select"
+  [disabled]="disabled || cargando"
+  [value]="value ?? ''"
+  (change)="onSelectChange($event)">
+
+  <option value="" disabled>
+    {{ cargando ? 'Cargando...' : placeholder }}
+  </option>
+
+  @for (grupo of grupos; track grupo.tipo) {
+    <optgroup [label]="grupo.etiqueta">
+      @for (u of grupo.items; track u.id) {
+        <option [value]="u.id">
+          {{ getDisplay(u) }}
+          @if (u.activa === false) { (inactiva) }
+        </option>
+      }
+    </optgroup>
+  }
+</select>

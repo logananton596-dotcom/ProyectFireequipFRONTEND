@@ -91,6 +91,16 @@
                 <td>{{ equipo()?.areaNombre || '-' }}</td>
               </tr>
               <tr>
+                <th>Ubicación:</th>
+                <td>
+                  @if (equipo()!.ubicacionDisplay) {
+                    <span [title]="equipo()!.ubicacionDisplay!">{{ equipo()!.ubicacionDisplay }}</span>
+                  } @else {
+                    <span class="text-muted fst-italic">No asignada</span>
+                  }
+                </td>
+              </tr>
+              <tr>
                 <th>Asignado:</th>
                 <td>
                   <span class="badge shadow-sm px-3 py-2 fw-bold" [class]="getAsignadoBadgeClass(equipo()!.asignado)">
@@ -202,6 +212,14 @@
                   </div>
                 </div>
               </div>
+              <div class="col-md-4">
+              <div class="card border-0 bg-light">
+                <div class="card-body text-center py-2">
+                  <small class="text-muted d-block">Ubicación</small>
+                  <strong>{{ equipo()!.ubicacionNombre || 'No asignada' }}</strong>
+                </div>
+              </div>
+            </div>
             </div>
           </div>
         </div>

@@ -118,7 +118,11 @@ export interface Equipo {
   observaciones?: string;
   areaId: number;
   areaNombre?: string;
-  ubicacionId?: number;
+  ubicacionId: number;
+  ubicacionCodigo?: string;
+  ubicacionNombre?: string;
+  ubicacionTipo?: string;
+  ubicacionDisplay?: string;
   asignado: boolean;
 }
 

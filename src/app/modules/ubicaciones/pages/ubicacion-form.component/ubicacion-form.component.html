@@ -2,7 +2,9 @@
   <div class="card shadow-sm border-0">
     <div class="card-header bg-white py-3">
       <h4 class="card-title mb-0 fw-bold text-dark">
-        <i class="bi text-primary me-2" [class.bi-plus-circle]="!isEditMode()" [class.bi-pencil-square]="isEditMode()"></i>
+        <i class="bi text-primary me-2"
+           [class.bi-plus-circle]="!isEditMode()"
+           [class.bi-pencil-square]="isEditMode()"></i>
         {{ isEditMode() ? 'Editar Ubicación' : 'Nueva Ubicación' }}
       </h4>
     </div>
@@ -20,43 +22,85 @@
         <div class="row g-4">
 
           <!-- Código -->
-          <div class="col-md-6">
+          <div class="col-md-4">
             <label class="form-label fw-semibold">Código *</label>
             <input type="text" class="form-control shadow-sm" formControlName="codigo"
-                   placeholder="Ej: UB-001"
+                   placeholder="Ej: P1, P1-OF-LOG, P1-OF-LOG-C03"
                    [class.is-invalid]="ubicacionForm.get('codigo')?.invalid && ubicacionForm.get('codigo')?.touched">
             @if (ubicacionForm.get('codigo')?.invalid && ubicacionForm.get('codigo')?.touched) {
-              <div class="invalid-feedback">El código es requerido</div>
+              <div class="invalid-feedback">El código es requerido (máx. 50)</div>
             }
           </div>
 
-          <!-- Nombre Ubicación -->
-          <div class="col-md-6">
+          <!-- Nombre -->
+          <div class="col-md-8">
             <label class="form-label fw-semibold">Nombre *</label>
-            <select class="form-select shadow-sm" formControlName="nombreUbicacion"
-                    [class.is-invalid]="ubicacionForm.get('nombreUbicacion')?.invalid && ubicacionForm.get('nombreUbicacion')?.touched">
-              <option value="" disabled>Seleccione una ubicación...</option>
-              @for (nombre of nombresUbicacion; track nombre) {
-                <option [value]="nombre">{{ formatearNombreUbicacion(nombre) }}</option>
-              }
-            </select>
-            @if (ubicacionForm.get('nombreUbicacion')?.invalid && ubicacionForm.get('nombreUbicacion')?.touched) {
-              <div class="invalid-feedback">El nombre es requerido</div>
+            <input type="text" class="form-control shadow-sm" formControlName="nombre"
+                   placeholder="Ej: Piso 1, Oficina Logística, Casillero A-03"
+                   [class.is-invalid]="ubicacionForm.get('nombre')?.invalid && ubicacionForm.get('nombre')?.touched">
+            @if (ubicacionForm.get('nombre')?.invalid && ubicacionForm.get('nombre')?.touched) {
+              <div class="invalid-feedback">El nombre es requerido (máx. 120)</div>
             }
           </div>
 
-          <!-- Estado -->
+          <!-- Tipo -->
           <div class="col-md-6">
-            <label class="form-label fw-semibold">Estado *</label>
-            <select class="form-select shadow-sm" formControlName="estado"
-                    [class.is-invalid]="ubicacionForm.get('estado')?.invalid && ubicacionForm.get('estado')?.touched">
-              @for (estado of estadosUbicacion; track estado) {
-                <option [value]="estado">{{ estado }}</option>
+            <label class="form-label fw-semibold">Tipo *</label>
+            <select class="form-select shadow-sm" formControlName="tipo"
+                    [class.is-invalid]="ubicacionForm.get('tipo')?.invalid && ubicacionForm.get('tipo')?.touched">
+              <option value="" disabled>Seleccione el tipo...</option>
+              @for (tipo of tiposUbicacion; track tipo) {
+                <option [value]="tipo">{{ formatearTipoUbicacion(tipo) }}</option>
               }
             </select>
-            @if (ubicacionForm.get('estado')?.invalid && ubicacionForm.get('estado')?.touched) {
-              <div class="invalid-feedback">El estado es requerido</div>
+            @if (ubicacionForm.get('tipo')?.invalid && ubicacionForm.get('tipo')?.touched) {
+              <div class="invalid-feedback">El tipo es requerido</div>
             }
+          </div>
+
+          <!-- Tipo personalizado (solo si tipo = OTRO) -->
+          @if (ubicacionForm.get('tipo')?.value === 'OTRO') {
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Tipo personalizado *</label>
+              <input type="text" class="form-control shadow-sm" formControlName="tipoPersonalizado"
+                     placeholder="Ej: Almacén MATPEL"
+                     [class.is-invalid]="ubicacionForm.get('tipoPersonalizado')?.invalid && ubicacionForm.get('tipoPersonalizado')?.touched">
+              @if (ubicacionForm.get('tipoPersonalizado')?.invalid && ubicacionForm.get('tipoPersonalizado')?.touched) {
+                <div class="invalid-feedback">Debe especificar el tipo personalizado</div>
+              }
+            </div>
+          }
+
+          <!-- Padre (solo si el tipo lo permite) -->
+          @if (ubicacionForm.get('tipo')?.value !== 'PISO' && padresDisponibles.length > 0) {
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Ubicación padre</label>
+              <select class="form-select shadow-sm" formControlName="padreId">
+                <option [ngValue]="null">Sin padre (raíz)</option>
+                @for (padre of padresDisponibles; track padre.id) {
+                  <option [ngValue]="padre.id">
+                    {{ padre.codigo }} - {{ padre.nombre }}
+                  </option>
+                }
+              </select>
+              <div class="form-text small">
+                El padre determina la jerarquía. Para un casillero, puede ser una oficina, un piso o un pasillo.
+              </div>
+            </div>
+          }
+
+          <!-- Área (opcional) -->
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Área propietaria</label>
+            <select class="form-select shadow-sm" formControlName="areaId">
+              <option [ngValue]="null">Sin área asignada</option>
+              @for (area of areas; track area.id) {
+                <option [ngValue]="area.id">{{ area.nombreArea }}</option>
+              }
+            </select>
+            <div class="form-text small">
+              Opcional. Solo aplica a oficinas, depósitos y otros espacios con área responsable.
+            </div>
           </div>
 
           <!-- Activa -->

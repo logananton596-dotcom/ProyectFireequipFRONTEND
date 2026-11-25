@@ -13,8 +13,10 @@
 .ubicacion-container .table tbody tr:hover {
   background-color: #f8f9fa;
 }
-
 .ubicacion-container .badge {
   font-weight: 500;
   letter-spacing: 0.3px;
+  min-width: 80px;
+  display: inline-block;
+  text-align: center;
 }

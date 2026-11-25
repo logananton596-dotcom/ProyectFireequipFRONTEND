@@ -37,6 +37,7 @@ services:
       retries: 5
 
   # ====== AQUÍ SE UNE TU NUEVO FRONTEND ======
+  
   frontend:
     image: ${DOCKER_USERNAME}/fireequip-manager:latest
     container_name: fireequip_manager

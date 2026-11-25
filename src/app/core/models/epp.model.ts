@@ -148,7 +148,11 @@ export interface Epp {
   compania: CompaniaBombero; // Importado de bombero.model
   areaId: number;
   areaNombre?: string; 
-  ubicacionId?: number; 
+  ubicacionId: number | null;
+  ubicacionCodigo?: string;
+  ubicacionNombre?: string;
+  ubicacionTipo?: string;
+  ubicacionDisplay?: string;
   fechaIncorporacion: Date | string;
   vidaUtilAnios: number;
   estado: EstadoEpp;

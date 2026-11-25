@@ -1,11 +1,14 @@
-// src/app/modules/ubicaciones/pages/ubicacion-list/ubicacion-list.component.ts
-
 import { Component, OnInit, OnDestroy, signal, computed, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { UbicacionService } from '../../../../core/services/ubicacion.service';
-import { Ubicacion, formatearNombreUbicacion, getEstadoUbicacionBadgeClass } from '../../../../core/models/ubicacion.model';
+import {
+  Ubicacion,
+  TipoUbicacion,
+  formatearTipoUbicacion,
+  getTipoUbicacionBadgeClass
+} from '../../../../core/models/ubicacion.model';
 import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 
@@ -27,20 +30,37 @@ export class UbicacionListComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription = new Subscription();
 
   searchTerm = signal<string>('');
+  filtroTipo = signal<TipoUbicacion | ''>('');
   paginaActual = signal(1);
   tamanoPagina = signal(10);
   opcionesTamano = [5, 10, 25, 50];
 
-  formatearNombreUbicacion = formatearNombreUbicacion;
-  getEstadoUbicacionBadgeClass = getEstadoUbicacionBadgeClass;
+  // Helpers
+  formatearTipoUbicacion = formatearTipoUbicacion;
+  getTipoUbicacionBadgeClass = getTipoUbicacionBadgeClass;
+
+  // Opciones de filtro por tipo
+  tiposDisponibles: TipoUbicacion[] = [
+    'PISO', 'OFICINA', 'CASILLERO', 'VEHICULO', 'COMPARTIMIENTO',
+    'PATIO', 'GARAJE', 'PASILLO', 'DEPOSITO', 'OTRO'
+  ];
 
   filteredUbicaciones = computed<Ubicacion[]>(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const lista = this.ubicacionesSignal();
+    const tipoFiltro = this.filtroTipo();
+    let lista = this.ubicacionesSignal();
+
+    if (tipoFiltro) {
+      lista = lista.filter(u => u.tipo === tipoFiltro);
+    }
+
     if (!term) return lista;
+
     return lista.filter(u =>
-      u.codigo.toLowerCase().includes(term) ||
-      u.nombreUbicacion.toLowerCase().includes(term) ||
+      (u.codigo && u.codigo.toLowerCase().includes(term)) ||
+      (u.nombre && u.nombre.toLowerCase().includes(term)) ||
+      (u.areaNombre && u.areaNombre.toLowerCase().includes(term)) ||
+      (u.padreNombre && u.padreNombre.toLowerCase().includes(term)) ||
       (u.observacion && u.observacion.toLowerCase().includes(term))
     );
   });
@@ -79,6 +99,20 @@ export class UbicacionListComponent implements OnInit, OnDestroy {
     );
   }
 
+  onFiltroTipoChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value as TipoUbicacion | '';
+    this.filtroTipo.set(value);
+    this.paginaActual.set(1);
+    this.cdRef.detectChanges();
+  }
+
+  limpiarFiltros(): void {
+    this.searchTerm.set('');
+    this.filtroTipo.set('');
+    this.paginaActual.set(1);
+    this.cdRef.detectChanges();
+  }
+
   verDetalle(id: number): void {
     this.router.navigate(['/ubicaciones', id]);
   }
@@ -105,11 +139,13 @@ export class UbicacionListComponent implements OnInit, OnDestroy {
   }
 
   cambiarEstado(id: number, activar: boolean): void {
-    const action = activar ? this.ubicacionService.activar(id) : this.ubicacionService.desactivar(id);
     this.subscriptions.add(
-      action.subscribe({
+      this.ubicacionService.cambiarActiva(id, activar).subscribe({
         next: () => {
-          this.toastr.success(`Ubicación ${activar ? 'activada' : 'desactivada'} correctamente`, 'Éxito');
+          this.toastr.success(
+            `Ubicación ${activar ? 'activada' : 'desactivada'} correctamente`,
+            'Éxito'
+          );
           this.loadUbicaciones();
         },
         error: (error) => {

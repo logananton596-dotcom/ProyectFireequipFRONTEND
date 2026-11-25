@@ -1,74 +1,102 @@
-export interface Ubicacion {
-  id?: number;
-  codigo: string;
-  nombreUbicacion: NombreUbicacion;
-  nombre: string;
-  descripcion?: string;
-  estado: EstadoUbicacion;
-  observacion?: string;
-  activa: boolean;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  // Relaciones inversas (no se envía, solo para referencia)
-  casilleroId?: number;
-  oficinaId?: number;
-}
+// ==================== TIPOS ====================
 
-
-// ==================== ENUMS ====================
-
-export type NombreUbicacion = 
-  | 'ALMACEN_GENERAL'
-  | 'ALMACEN_EPP'
-  | 'ALMACEN_EQUIPOS'
-  | 'OFICINA_JEFATURA'
-  | 'OFICINA_SERVICIOS_GENERALES'
-  | 'OFICINA_SANIDAD'
-  | 'OFICINA_GUARDIA'
-  | 'OFICINA_COCINA'
-  | 'OFICINA_VESTIDORES'
-  | 'OFICINA_BANOS'
-  | 'OFICINA_AZOTEA'
-  | 'OFICINA_COMEDOR'
-  | 'OFICINA_SOTANO'
+export type TipoUbicacion =
+  | 'PISO'
+  | 'OFICINA'
   | 'CASILLERO'
   | 'VEHICULO'
+  | 'COMPARTIMIENTO'
+  | 'PATIO'
+  | 'GARAJE'
+  | 'PASILLO'
+  | 'DEPOSITO'
   | 'OTRO';
 
-export type EstadoUbicacion = 'ACTIVA' | 'INACTIVA';
+// ==================== CONSTANTES ====================
 
-export const NOMBRES_UBICACION: NombreUbicacion[] = [
-  'ALMACEN_GENERAL',
-  'ALMACEN_EPP',
-  'ALMACEN_EQUIPOS',
-  'OFICINA_JEFATURA',
-  'OFICINA_SERVICIOS_GENERALES',
-  'OFICINA_SANIDAD',
-  'OFICINA_GUARDIA',
-  'OFICINA_COCINA',
-  'OFICINA_VESTIDORES',
-  'OFICINA_BANOS',
-  'OFICINA_AZOTEA',
-  'OFICINA_COMEDOR',
-  'OFICINA_SOTANO',
+export const TIPOS_UBICACION: TipoUbicacion[] = [
+  'PISO',
+  'OFICINA',
   'CASILLERO',
   'VEHICULO',
+  'COMPARTIMIENTO',
+  'PATIO',
+  'GARAJE',
+  'PASILLO',
+  'DEPOSITO',
   'OTRO'
 ];
 
-export const ESTADOS_UBICACION: EstadoUbicacion[] = ['ACTIVA', 'INACTIVA'];
+// ==================== INTERFACE ====================
+
+export interface Ubicacion {
+  id?: number;
+  codigo: string;
+  nombre: string;
+  tipo: TipoUbicacion;
+  tipoPersonalizado?: string;
+  padreId?: number | null;
+  padreNombre?: string;
+  areaId?: number | null;
+  areaNombre?: string;
+  activa?: boolean;
+  observacion?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  hijos?: Ubicacion[];
+}
 
 // ==================== HELPERS ====================
 
-export function formatearNombreUbicacion(nombre: NombreUbicacion): string {
-  return nombre.toLowerCase()
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (letra) => letra.toUpperCase());
+export function formatearTipoUbicacion(
+  tipo: TipoUbicacion | string,
+  tipoPersonalizado?: string
+): string {
+  if (tipo === 'OTRO' && tipoPersonalizado) {
+    return tipoPersonalizado;
+  }
+  const mapa: Record<string, string> = {
+    PISO: 'Piso',
+    OFICINA: 'Oficina',
+    CASILLERO: 'Casillero',
+    VEHICULO: 'Vehículo',
+    COMPARTIMIENTO: 'Compartimiento',
+    PATIO: 'Patio',
+    GARAJE: 'Garaje',
+    PASILLO: 'Pasillo',
+    DEPOSITO: 'Depósito',
+    OTRO: 'Otro'
+  };
+  return mapa[tipo as string] ?? tipo;
 }
 
-export function getEstadoUbicacionBadgeClass(estado: EstadoUbicacion): string {
-  return estado === 'ACTIVA' ? 'bg-success text-white' : 'bg-danger text-white';
+export function getTipoUbicacionBadgeClass(tipo: TipoUbicacion | string): string {
+  switch (tipo) {
+    case 'PISO': return 'bg-primary text-white';
+    case 'OFICINA': return 'bg-info text-dark';
+    case 'CASILLERO': return 'bg-success text-white';
+    case 'VEHICULO': return 'bg-warning text-dark';
+    case 'COMPARTIMIENTO': return 'bg-secondary text-white';
+    case 'PATIO': return 'bg-light text-dark';
+    case 'GARAJE': return 'bg-dark text-white';
+    case 'PASILLO': return 'bg-light text-dark';
+    case 'DEPOSITO': return 'bg-secondary text-white';
+    default: return 'bg-secondary text-white';
+  }
 }
-export function getUbicacionDisplay(ubicacion: Ubicacion): string {
+
+export function getUbicacionDisplay(ubicacion: Ubicacion | null | undefined): string {
+  if (!ubicacion) return '-';
   return `${ubicacion.codigo} - ${ubicacion.nombre}`;
+}
+
+/**
+ * Construye la ruta completa de una ubicación (sin llamar al backend),
+ * solo con el padre que ya viene en el objeto.
+ */
+export function construirRutaCorta(u: Ubicacion): string {
+  if (u.padreNombre) {
+    return `${u.padreNombre} > ${u.nombre}`;
+  }
+  return u.nombre;
 }

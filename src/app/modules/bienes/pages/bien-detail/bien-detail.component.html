@@ -132,10 +132,10 @@
               <tr>
                 <th>Ubicación Física:</th>
                 <td>
-                  @if (ubicacion()) {
-                    <strong>{{ getUbicacionDisplay(ubicacion()!) }}</strong>
+                  @if (bien()!.ubicacionDisplay) {
+                    <span [title]="bien()!.ubicacionDisplay!">{{ bien()!.ubicacionDisplay }}</span>
                   } @else {
-                    <span class="text-muted">Ubicación no disponible</span>
+                    <span class="text-muted fst-italic">No asignada</span>
                   }
                 </td>
               </tr>

@@ -8,14 +8,12 @@ import { AreaService } from '../../../../core/services/area.service';
 import { 
   TIPOS_EPP, NOMBRES_EPP, ESTADOS_EPP, 
   formatearTipoEpp, formatearNombreEpp, formatearEstadoEpp,
-  EstadoEpp
+  EstadoEpp,Epp
 } from '../../../../core/models/epp.model';
-import { UbicacionService } from '../../../../core/services/ubicacion.service';
 import { COMPANIAS_BOMBERO, formatearCompania } from '../../../../core/models/bombero.model';
 import { Area } from '../../../../core/models/area.model';
 import { Subscription } from 'rxjs';
 import { SelectUbicacionComponent } from "../../../../shared/components/select-ubicacion/select-ubicacion.component";
-import { Ubicacion } from '../../../../core/models/ubicacion.model';
 
 @Component({
   selector: 'app-epp-form',
@@ -27,12 +25,11 @@ import { Ubicacion } from '../../../../core/models/ubicacion.model';
 export class EppForm implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private eppService = inject(EppService);
-  private ubicacionService = inject(UbicacionService);
   private areaService = inject(AreaService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private toastr = inject(ToastrService);
-
+  eppSignal = signal<Epp | null>(null);
   isEditMode = signal(false);
   eppId: number | null = null;
   loading = signal(false);
@@ -40,7 +37,6 @@ export class EppForm implements OnInit, OnDestroy {
   mostrarCamposBaja = signal(false);
 
   areas = signal<Area[]>([]);
-  ubicaciones = signal<Ubicacion[]>([]);
   private subscriptions: Subscription = new Subscription();
 
   // Enums y helpers
@@ -71,7 +67,8 @@ export class EppForm implements OnInit, OnDestroy {
     marca: [''],
     color: [''],
     observaciones: [''],
-    ubicacionId: [null]
+    ubicacionId: [null, Validators.required],
+    asignado: [false]
   }, {
     validators: [
       this.validarCamposBaja.bind(this)
@@ -80,7 +77,6 @@ export class EppForm implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.cargarAreas();
-    this.cargarUbicaciones();
     // Escuchar cambios en estado para mostrar/ocultar campos de baja
     this.eppForm.get('estado')?.valueChanges.subscribe((estado: string) => {
       this.mostrarCamposBaja.set(estado === 'BAJA');
@@ -99,18 +95,6 @@ export class EppForm implements OnInit, OnDestroy {
         this.loadEpp();
       }
     });
-  }
-  private cargarUbicaciones(): void {
-    this.subscriptions.add(
-      this.ubicacionService.getActivas().subscribe({
-        next: (ubicaciones) => {
-          this.ubicaciones.set(ubicaciones);
-        },
-        error: () => {
-          this.toastr.error('Error cargando ubicaciones', 'Error');
-        }
-      })
-    );
   }
 
   private cargarAreas(): void {
@@ -134,6 +118,7 @@ export class EppForm implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.eppService.getById(this.eppId).subscribe({
         next: (epp) => {
+          this.eppSignal.set(epp); 
           this.eppForm.patchValue({
             codigoCgbvp: epp.codigoCgbvp,
             numeroSerie: epp.numeroSerie,
@@ -141,6 +126,7 @@ export class EppForm implements OnInit, OnDestroy {
             nombreEpp: epp.nombreEpp,
             compania: epp.compania,
             areaId: epp.areaId,
+            ubicacionId: epp.ubicacionId ?? null,
             fechaIncorporacion: this.formatDateForInput(epp.fechaIncorporacion),
             vidaUtilAnios: epp.vidaUtilAnios,
             estado: epp.estado,
@@ -151,6 +137,7 @@ export class EppForm implements OnInit, OnDestroy {
             marca: epp.marca || '',
             color: epp.color || '',
             observaciones: epp.observaciones || ''
+            
           });
 
           this.mostrarCamposBaja.set(epp.estado === 'BAJA');
@@ -196,11 +183,11 @@ export class EppForm implements OnInit, OnDestroy {
     }
 
     this.submitting.set(true);
-    const formValue = this.eppForm.value;
+    const formValue = this.eppForm.getRawValue;
 
     if (this.isEditMode() && this.eppId) {
       this.subscriptions.add(
-        this.eppService.update(this.eppId, formValue).subscribe({
+        this.eppService.update(this.eppId, formValue()).subscribe({
           next: () => {
             this.toastr.success('EPP actualizado correctamente', 'Éxito');
             this.router.navigate(['/epp', this.eppId]);
@@ -214,7 +201,7 @@ export class EppForm implements OnInit, OnDestroy {
       );
     } else {
       this.subscriptions.add(
-        this.eppService.create(formValue).subscribe({
+        this.eppService.create(formValue()).subscribe({
           next: (epp) => {
             this.toastr.success('EPP creado correctamente', 'Éxito');
             this.router.navigate(['/epp', epp.id]);

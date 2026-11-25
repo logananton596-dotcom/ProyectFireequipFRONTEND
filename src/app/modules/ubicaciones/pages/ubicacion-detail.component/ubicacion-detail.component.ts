@@ -1,11 +1,13 @@
-// src/app/modules/ubicaciones/pages/ubicacion-detail/ubicacion-detail.component.ts
-
 import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { UbicacionService } from '../../../../core/services/ubicacion.service';
-import { Ubicacion, formatearNombreUbicacion, getEstadoUbicacionBadgeClass } from '../../../../core/models/ubicacion.model';
+import {
+  Ubicacion,
+  formatearTipoUbicacion,
+  getTipoUbicacionBadgeClass
+} from '../../../../core/models/ubicacion.model';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -25,8 +27,9 @@ export class UbicacionDetailComponent implements OnInit, OnDestroy {
   loading = signal(false);
   private subscriptions: Subscription = new Subscription();
 
-  formatearNombreUbicacion = formatearNombreUbicacion;
-  getEstadoUbicacionBadgeClass = getEstadoUbicacionBadgeClass;
+  // Helpers
+  formatearTipoUbicacion = formatearTipoUbicacion;
+  getTipoUbicacionBadgeClass = getTipoUbicacionBadgeClass;
 
   ngOnInit(): void {
     this.loadUbicacion();
@@ -66,7 +69,7 @@ export class UbicacionDetailComponent implements OnInit, OnDestroy {
     const ubicacion = this.ubicacion();
     if (!ubicacion) return;
 
-    if (confirm(`¿Está seguro de eliminar la ubicación "${formatearNombreUbicacion(ubicacion.nombreUbicacion)}"?`)) {
+    if (confirm(`¿Está seguro de eliminar la ubicación "${ubicacion.nombre}"?`)) {
       this.subscriptions.add(
         this.ubicacionService.deleteById(ubicacion.id!).subscribe({
           next: () => {
@@ -85,11 +88,13 @@ export class UbicacionDetailComponent implements OnInit, OnDestroy {
     const ubicacion = this.ubicacion();
     if (!ubicacion?.id) return;
 
-    const action = activar ? this.ubicacionService.activar(ubicacion.id) : this.ubicacionService.desactivar(ubicacion.id);
     this.subscriptions.add(
-      action.subscribe({
+      this.ubicacionService.cambiarActiva(ubicacion.id, activar).subscribe({
         next: () => {
-          this.toastr.success(`Ubicación ${activar ? 'activada' : 'desactivada'} correctamente`, 'Éxito');
+          this.toastr.success(
+            `Ubicación ${activar ? 'activada' : 'desactivada'} correctamente`,
+            'Éxito'
+          );
           this.loadUbicacion();
         },
         error: (error) => {

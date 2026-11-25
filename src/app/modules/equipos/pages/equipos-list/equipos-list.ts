@@ -55,19 +55,23 @@ export class EquiposList implements OnInit, OnDestroy {
     const listaOriginal = this.equiposSignal();
 
     if (!term) return listaOriginal;
-
-    return listaOriginal.filter(equipo =>
-      (equipo.codigoCgbvp && equipo.codigoCgbvp.toLowerCase().includes(term)) ||
-      (equipo.numeroSerie && equipo.numeroSerie.toLowerCase().includes(term)) ||
-      (equipo.nombreEquipo && equipo.nombreEquipo.toLowerCase().includes(term)) ||
-      (equipo.tipoEquipo && equipo.tipoEquipo.toLowerCase().includes(term)) ||
-      (equipo.compania && equipo.compania.toLowerCase().includes(term)) ||
-      (equipo.estado && equipo.estado.toLowerCase().includes(term)) ||
-      (equipo.areaNombre && equipo.areaNombre.toLowerCase().includes(term)) ||
-      (equipo.marca && equipo.marca.toLowerCase().includes(term)) ||
-      (equipo.modelo && equipo.modelo.toLowerCase().includes(term))
-    );
+      return listaOriginal.filter(equipo =>{
+        const ubicacionTexto = (equipo.ubicacionNombre ?? '').toLowerCase();
+        return (
+          (equipo.codigoCgbvp && equipo.codigoCgbvp.toLowerCase().includes(term)) ||
+          (equipo.numeroSerie && equipo.numeroSerie.toLowerCase().includes(term)) ||
+          (equipo.nombreEquipo && equipo.nombreEquipo.toLowerCase().includes(term)) ||
+          (equipo.tipoEquipo && equipo.tipoEquipo.toLowerCase().includes(term)) ||
+          (equipo.compania && equipo.compania.toLowerCase().includes(term)) ||
+          (equipo.estado && equipo.estado.toLowerCase().includes(term)) ||
+          (equipo.areaNombre && equipo.areaNombre.toLowerCase().includes(term)) ||
+          (equipo.marca && equipo.marca.toLowerCase().includes(term)) ||
+          (equipo.modelo && equipo.modelo.toLowerCase().includes(term)) ||
+          ubicacionTexto.includes(term) 
+        );
+    });
   });
+
 
   equiposPaginados = computed(() => {
     const inicio = (this.paginaActual() - 1) * this.tamanoPagina();

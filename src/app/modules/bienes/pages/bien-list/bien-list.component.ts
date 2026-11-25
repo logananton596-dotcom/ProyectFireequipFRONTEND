@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { BienService } from '../../../../core/services/bien.service';
-import { UbicacionService } from '../../../../core/services/ubicacion.service';
 import { 
   Bien, 
   formatearTipoBien, 
@@ -11,7 +10,6 @@ import {
   getEstadoBienBadgeClass,
   EstadoBien
 } from '../../../../core/models/bien.model';
-import { Ubicacion } from '../../../../core/models/ubicacion.model';
 import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 
@@ -24,14 +22,12 @@ import { FormsModule } from '@angular/forms';
 })
 export class BienListComponent implements OnInit, OnDestroy {
   private bienService = inject(BienService);
-  private ubicacionService = inject(UbicacionService);
   private router = inject(Router);
   private toastr = inject(ToastrService);
   private cdRef = inject(ChangeDetectorRef);
 
   // Signals
   private bienesSignal = signal<Bien[]>([]);
-  private ubicacionesMap = new Map<number, Ubicacion>();
   loading = false;
   private subscriptions: Subscription = new Subscription();
 
@@ -47,48 +43,29 @@ export class BienListComponent implements OnInit, OnDestroy {
   getEstadoBienBadgeClass = getEstadoBienBadgeClass;
 
   ngOnInit(): void {
-    this.cargarUbicaciones();
     this.loadBienes();
   }
 
-  private cargarUbicaciones(): void {
-    this.subscriptions.add(
-      this.ubicacionService.getActivas().subscribe({
-        next: (ubicaciones) => {
-          ubicaciones.forEach(u => {
-            if (u.id) this.ubicacionesMap.set(u.id, u);
-          });
-        },
-        error: () => {
-          this.toastr.warning('No se pudieron cargar las ubicaciones', 'Advertencia');
-        }
-      })
-    );
-  }
-
-  getUbicacionDisplay(ubicacionId: number): string {
-    const ubicacion = this.ubicacionesMap.get(ubicacionId);
-    if (!ubicacion) return `UB-${ubicacionId}`;
-    return `${ubicacion.codigo} - ${ubicacion.nombre}`;
-  }
-
   // Filtro
-  filteredBienes = computed<Bien[]>(() => {
-    const term = this.searchTerm().toLowerCase().trim();
-    const listaOriginal = this.bienesSignal();
+filteredBienes = computed<Bien[]>(() => {
+  const term = this.searchTerm().toLowerCase().trim();
+  const listaOriginal = this.bienesSignal();
+  if (!term) return listaOriginal;
 
-    if (!term) return listaOriginal;
-
-    return listaOriginal.filter(bien =>
+  return listaOriginal.filter(bien => {
+    const ubicacionTexto = (bien.ubicacionNombre ?? '').toLowerCase();
+    return (
       (bien.codigoCgbvp && bien.codigoCgbvp.toLowerCase().includes(term)) ||
       (bien.nombre && bien.nombre.toLowerCase().includes(term)) ||
       (bien.tipoBien && bien.tipoBien.toLowerCase().includes(term)) ||
       (bien.areaNombre && bien.areaNombre.toLowerCase().includes(term)) ||
       (bien.estado && bien.estado.toLowerCase().includes(term)) ||
       (bien.marca && bien.marca.toLowerCase().includes(term)) ||
-      (bien.modelo && bien.modelo.toLowerCase().includes(term))
+      (bien.modelo && bien.modelo.toLowerCase().includes(term)) ||
+      ubicacionTexto.includes(term)
     );
   });
+});
 
   bienesPaginados = computed(() => {
     const inicio = (this.paginaActual() - 1) * this.tamanoPagina();

@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { BienService } from '../../../../core/services/bien.service';
-import { UbicacionService } from '../../../../core/services/ubicacion.service';
+import { SelectUbicacionComponent } from '../../../../shared/components/select-ubicacion/select-ubicacion.component';
 import {
   TIPOS_BIEN,
   ESTADOS_BIEN,
@@ -13,7 +13,6 @@ import {
   formatearEstadoBien,
   formatearCondicionBien
 } from '../../../../core/models/bien.model';
-import { Ubicacion, getUbicacionDisplay } from '../../../../core/models/ubicacion.model';
 import { Subscription } from 'rxjs';
 import { AreaService } from '../../../../core/services/area.service';
 import { Area } from '../../../../core/models/area.model';
@@ -21,14 +20,13 @@ import { Area } from '../../../../core/models/area.model';
 @Component({
   selector: 'app-bien-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, SelectUbicacionComponent],
   templateUrl: './bien-form.component.html',
   styleUrls: ['./bien-form.component.css']
 })
 export class BienFormComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private bienService = inject(BienService);
-  private ubicacionService = inject(UbicacionService);
   private areaService = inject(AreaService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -41,7 +39,6 @@ export class BienFormComponent implements OnInit, OnDestroy {
   submitting = signal(false);
 
   areas = signal<Area[]>([]);
-  ubicaciones = signal<Ubicacion[]>([]);
 
   private subscriptions: Subscription = new Subscription();
 
@@ -54,8 +51,6 @@ export class BienFormComponent implements OnInit, OnDestroy {
   formatearTipoBien = formatearTipoBien;
   formatearEstadoBien = formatearEstadoBien;
   formatearCondicionBien = formatearCondicionBien;
-  getUbicacionDisplay = getUbicacionDisplay;
-
 
   // Formulario
   bienForm: FormGroup = this.fb.group({
@@ -72,13 +67,12 @@ export class BienFormComponent implements OnInit, OnDestroy {
     especificaciones: ['', Validators.maxLength(1000)],
     observaciones: ['', Validators.maxLength(500)],
     areaId: [null, Validators.required],
-    ubicacionId: [null],
+    ubicacionId: [null, Validators.required],
     activo: [true]
   });
 
   ngOnInit(): void {
     this.cargarAreas();
-    this.cargarUbicaciones();
 
     this.route.params.subscribe(params => {
       if (params['id']) {
@@ -87,19 +81,6 @@ export class BienFormComponent implements OnInit, OnDestroy {
         this.loadBien();
       }
     });
-  }
-
-  private cargarUbicaciones(): void {
-    this.subscriptions.add(
-      this.ubicacionService.getActivas().subscribe({
-        next: (ubicaciones) => {
-          this.ubicaciones.set(ubicaciones);
-        },
-        error: () => {
-          this.toastr.error('Error cargando ubicaciones', 'Error');
-        }
-      })
-    );
   }
 
   private cargarAreas(): void {
@@ -137,7 +118,7 @@ export class BienFormComponent implements OnInit, OnDestroy {
             especificaciones: bien.especificaciones || '',
             observaciones: bien.observaciones || '',
             areaId: bien.areaId,
-            ubicacionId: bien.ubicacionId,
+            ubicacionId: bien.ubicacionId ?? null,
             activo: bien.activo
           });
           this.loading.set(false);
@@ -165,11 +146,11 @@ export class BienFormComponent implements OnInit, OnDestroy {
     }
 
     this.submitting.set(true);
-    const formValue = this.bienForm.value;
+    const formValue = this.bienForm.getRawValue;
 
     if (this.isEditMode() && this.bienId) {
       this.subscriptions.add(
-        this.bienService.update(this.bienId, formValue).subscribe({
+        this.bienService.update(this.bienId, formValue()).subscribe({
           next: () => {
             this.toastr.success('Bien actualizado correctamente', 'Éxito');
             this.router.navigate(['/bienes', this.bienId]);
@@ -183,7 +164,7 @@ export class BienFormComponent implements OnInit, OnDestroy {
       );
     } else {
       this.subscriptions.add(
-        this.bienService.create(formValue).subscribe({
+        this.bienService.create(formValue()).subscribe({
           next: (bien) => {
             this.toastr.success('Bien creado correctamente', 'Éxito');
             this.router.navigate(['/bienes', bien.id]);

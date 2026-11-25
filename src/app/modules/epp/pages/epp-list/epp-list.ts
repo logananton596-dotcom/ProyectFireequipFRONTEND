@@ -5,10 +5,8 @@ import { ToastrService } from 'ngx-toastr';
 import { EppService } from '../../../../core/services/epp.service';
 import { Epp, formatearTipoEpp, formatearNombreEpp, getEstadoEppBadgeClass, EstadoEpp } from '../../../../core/models/epp.model';
 import { formatearCompania } from '../../../../core/models/bombero.model';
-import { Area } from '../../../../core/models/area.model';
 import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
-import { formatearNombreUbicacion, Ubicacion } from '../../../../core/models/ubicacion.model';
 
 @Component({
   selector: 'app-epp-list',
@@ -49,6 +47,7 @@ export class EppList implements OnInit, OnDestroy {
 
     return listaOriginal.filter(epp => {
       const areaTexto = (epp.areaNombre ?? '').toLowerCase();
+      const ubicacionTexto = (epp.ubicacionNombre ?? '').toLowerCase();
       return (
         (epp.codigoCgbvp && epp.codigoCgbvp.toLowerCase().includes(term)) ||
         (epp.numeroSerie && epp.numeroSerie.toLowerCase().includes(term)) ||
@@ -56,7 +55,8 @@ export class EppList implements OnInit, OnDestroy {
         (epp.nombreEpp && epp.nombreEpp.toLowerCase().includes(term)) ||
         (epp.compania && epp.compania.toLowerCase().includes(term)) ||
         (epp.estado && epp.estado.toLowerCase().includes(term)) ||
-        areaTexto.includes(term)
+        areaTexto.includes(term) ||
+        ubicacionTexto.includes(term)
       );
     });
   });
@@ -76,13 +76,6 @@ export class EppList implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadEpps();
   }
-   public ubicacionesMap: Map<number, Ubicacion> = new Map<number, Ubicacion>();
-
-  getUbicacionNombre(ubicacionId?: number): string {
-  if (!ubicacionId) return 'N/A';
-  const ubicacion = this.ubicacionesMap.get(ubicacionId);
-  return ubicacion ? formatearNombreUbicacion(ubicacion.nombreUbicacion) : `Ubicación #${ubicacionId}`;
-}
 
   loadEpps(): void {
     this.loading = true;

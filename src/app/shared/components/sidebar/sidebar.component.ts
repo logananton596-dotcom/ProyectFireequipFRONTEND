@@ -61,8 +61,6 @@ export class SidebarComponent {
       items: [
         { path: '/areas', icon: 'bi bi-building', label: 'Áreas', roles: ['ADMIN'] },
         { path: '/ubicaciones', icon: 'bi bi-geo-alt', label: 'Ubicaciones', roles: ['ADMIN'] },
-        { path: '/oficinas', icon: 'bi bi-building', label: 'Oficinas', roles: ['ADMIN', 'OPERADOR'] },
-        { path: '/casilleros', icon: 'bi bi-lock', label: 'Casilleros', roles: ['ADMIN', 'OPERADOR'] }
       ]
     },
     {

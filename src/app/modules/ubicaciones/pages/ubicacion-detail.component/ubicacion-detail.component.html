@@ -19,24 +19,28 @@
   @if (!loading() && ubicacion()) {
     <div class="card shadow-sm border-0">
       <!-- Header -->
-      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
         <h4 class="card-title mb-0 fw-bold text-dark">
           <i class="bi bi-geo-alt text-primary me-2"></i>
-          {{ formatearNombreUbicacion(ubicacion()!.nombreUbicacion) }}
-          <span class="badge ms-2" [class]="getEstadoUbicacionBadgeClass(ubicacion()!.estado)">
-            {{ ubicacion()!.estado }}
+          {{ ubicacion()!.codigo }} - {{ ubicacion()!.nombre }}
+          <span class="badge ms-2"
+                [class]="getTipoUbicacionBadgeClass(ubicacion()!.tipo)">
+            {{ formatearTipoUbicacion(ubicacion()!.tipo, ubicacion()!.tipoPersonalizado) }}
           </span>
+          @if (ubicacion()!.activa === false) {
+            <span class="badge bg-secondary ms-1">Inactiva</span>
+          }
         </h4>
-        <div>
-          <button class="btn btn-primary me-2" (click)="editar()">
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary" (click)="editar()">
             <i class="bi bi-pencil"></i> Editar
           </button>
           @if (ubicacion()!.activa) {
-            <button class="btn btn-warning me-2" (click)="cambiarEstado(false)">
+            <button class="btn btn-warning" (click)="cambiarEstado(false)">
               <i class="bi bi-pause-circle"></i> Desactivar
             </button>
           } @else {
-            <button class="btn btn-success me-2" (click)="cambiarEstado(true)">
+            <button class="btn btn-success" (click)="cambiarEstado(true)">
               <i class="bi bi-play-circle"></i> Activar
             </button>
           }
@@ -52,19 +56,37 @@
           <div class="col-md-6">
             <table class="table table-borderless">
               <tr>
-                <th width="40%">Código:</th>
+                <th>Código:</th>
                 <td><strong>{{ ubicacion()!.codigo }}</strong></td>
               </tr>
               <tr>
                 <th>Nombre:</th>
-                <td>{{ formatearNombreUbicacion(ubicacion()!.nombreUbicacion) }}</td>
+                <td>{{ ubicacion()!.nombre }}</td>
               </tr>
               <tr>
-                <th>Estado:</th>
+                <th>Tipo:</th>
                 <td>
-                  <span class="badge shadow-sm px-3 py-2 fw-bold" [class]="getEstadoUbicacionBadgeClass(ubicacion()!.estado)">
-                    {{ ubicacion()!.estado }}
+                  <span class="badge shadow-sm px-3 py-2 fw-bold"
+                        [class]="getTipoUbicacionBadgeClass(ubicacion()!.tipo)">
+                    {{ formatearTipoUbicacion(ubicacion()!.tipo, ubicacion()!.tipoPersonalizado) }}
                   </span>
+                </td>
+              </tr>
+              @if (ubicacion()!.tipo === 'OTRO' && ubicacion()!.tipoPersonalizado) {
+                <tr>
+                  <th>Tipo personalizado:</th>
+                  <td>{{ ubicacion()!.tipoPersonalizado }}</td>
+                </tr>
+              }
+              <tr>
+                <th>Ubicación padre:</th>
+                <td>
+                  @if (ubicacion()!.padreNombre) {
+                    <i class="bi bi-arrow-return-right me-1 text-muted"></i>
+                    {{ ubicacion()!.padreNombre }}
+                  } @else {
+                    <span class="text-muted fst-italic">Raíz (sin padre)</span>
+                  }
                 </td>
               </tr>
             </table>
@@ -74,19 +96,31 @@
           <div class="col-md-6">
             <table class="table table-borderless">
               <tr>
-                <th width="40%">Activa:</th>
+                <th>Área propietaria:</th>
                 <td>
-                  <span class="badge" [class.bg-success]="ubicacion()!.activa" [class.bg-secondary]="!ubicacion()!.activa">
+                  @if (ubicacion()!.areaNombre) {
+                    {{ ubicacion()!.areaNombre }}
+                  } @else {
+                    <span class="text-muted fst-italic">Sin área asignada</span>
+                  }
+                </td>
+              </tr>
+              <tr>
+                <th>Activa:</th>
+                <td>
+                  <span class="badge"
+                        [class.bg-success]="ubicacion()!.activa"
+                        [class.bg-secondary]="!ubicacion()!.activa">
                     {{ ubicacion()!.activa ? 'Sí' : 'No' }}
                   </span>
                 </td>
               </tr>
               <tr>
-                <th>Fecha Creación:</th>
+                <th>Fecha creación:</th>
                 <td>{{ formatFecha(ubicacion()!.createdAt) }}</td>
               </tr>
               <tr>
-                <th>Última Actualización:</th>
+                <th>Última actualización:</th>
                 <td>{{ formatFecha(ubicacion()!.updatedAt) }}</td>
               </tr>
             </table>
@@ -110,7 +144,7 @@
         <div class="row mt-3">
           <div class="col-12">
             <hr>
-            <h6 class="text-muted mb-2"><i class="bi bi-info-circle me-2"></i>Información Adicional</h6>
+            <h6 class="text-muted mb-2"><i class="bi bi-info-circle me-2"></i>Información adicional</h6>
             <div class="row g-3">
               <div class="col-md-6">
                 <div class="card border-0 bg-light">
@@ -123,8 +157,14 @@
               <div class="col-md-6">
                 <div class="card border-0 bg-light">
                   <div class="card-body text-center py-2">
-                    <small class="text-muted d-block">Tipo</small>
-                    <strong>{{ formatearNombreUbicacion(ubicacion()!.nombreUbicacion) }}</strong>
+                    <small class="text-muted d-block">Ruta corta</small>
+                    <strong>
+                      @if (ubicacion()!.padreNombre) {
+                        {{ ubicacion()!.padreNombre }} &gt; {{ ubicacion()!.nombre }}
+                      } @else {
+                        {{ ubicacion()!.nombre }}
+                      }
+                    </strong>
                   </div>
                 </div>
               </div>

@@ -1,51 +1,53 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { Ubicacion } from '../models/ubicacion.model';
+import { Ubicacion, TipoUbicacion } from '../models/ubicacion.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UbicacionService extends ApiService {
+  private readonly endpoint = 'ubicaciones';
 
-  // CRUD Principal
+  // Listados
   getAll(): Observable<Ubicacion[]> {
-    return this.get<Ubicacion[]>('ubicaciones');
+    return this.get<Ubicacion[]>(this.endpoint);
   }
 
   getActivas(): Observable<Ubicacion[]> {
-    return this.get<Ubicacion[]>('ubicaciones/activas');
+    return this.get<Ubicacion[]>(`${this.endpoint}/activas`);
+  }
+
+  getPorTipo(tipo: TipoUbicacion): Observable<Ubicacion[]> {
+    return this.get<Ubicacion[]>(`${this.endpoint}/tipo/${tipo}`);
+  }
+
+  getRaices(): Observable<Ubicacion[]> {
+    return this.get<Ubicacion[]>(`${this.endpoint}/raices`);
+  }
+
+  getHijas(padreId: number): Observable<Ubicacion[]> {
+    return this.get<Ubicacion[]>(`${this.endpoint}/${padreId}/hijas`);
   }
 
   getById(id: number): Observable<Ubicacion> {
-    return this.get<Ubicacion>(`ubicaciones/${id}`);
+    return this.get<Ubicacion>(`${this.endpoint}/${id}`);
   }
 
-  getByNombre(nombre: string): Observable<Ubicacion> {
-    return this.get<Ubicacion>(`ubicaciones/nombre/${nombre}`);
+  // CRUD
+  create(ubicacion: Ubicacion): Observable<Ubicacion> {
+    return this.post<Ubicacion>(this.endpoint, ubicacion);
   }
 
-  getByTipo(tipo: string): Observable<Ubicacion[]> {
-    return this.get<Ubicacion[]>(`ubicaciones/tipo/${tipo}`);
-  }
-
-  create(data: Partial<Ubicacion>): Observable<Ubicacion> {
-    return this.post<Ubicacion>('ubicaciones', data);
-  }
-
-  update(id: number, data: Partial<Ubicacion>): Observable<Ubicacion> {
-    return this.put<Ubicacion>(`ubicaciones/${id}`, data);
-  }
-
-  activar(id: number): Observable<Ubicacion> {
-    return this.patch<Ubicacion>(`ubicaciones/${id}/activar`);
-  }
-
-  desactivar(id: number): Observable<Ubicacion> {
-    return this.patch<Ubicacion>(`ubicaciones/${id}/desactivar`);
+  update(id: number, ubicacion: Ubicacion): Observable<Ubicacion> {
+    return this.put<Ubicacion>(`${this.endpoint}/${id}`, ubicacion);
   }
 
   deleteById(id: number): Observable<void> {
-    return this.delete<void>(`ubicaciones/${id}`);
+    return this.delete<void>(`${this.endpoint}/${id}`);
+  }
+
+  cambiarActiva(id: number, activa: boolean): Observable<Ubicacion> {
+    return this.patch<Ubicacion>(`${this.endpoint}/${id}/activa?activa=${activa}`);
   }
 }

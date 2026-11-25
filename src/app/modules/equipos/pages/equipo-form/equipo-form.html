@@ -114,25 +114,17 @@
             <input type="text" 
                    class="form-control shadow-sm" 
                    formControlName="nombreEquipo"
-                   list="listaMaterialesEpp"
+                   list="listaNombresEquipo"
                    placeholder="Escriba para buscar o filtrar equipo...">
             
             <!-- El catálogo gigante se renderiza aquí de forma oculta hasta que el usuario escribe -->
-            <datalist id="listaMaterialesEpp">
+            <datalist id="listaNombresEquipo">
               @for (nombre of nombresEquipo; track nombre) {
                 <!-- Guardamos el Enum técnico en el value y mostramos el texto legible al lado -->
                 <option [value]="nombre">{{ formatearNombreEquipo(nombre) }}</option>
               }
             </datalist>
 
-            <!-- SI SELECCIONA 'OTRO', DESPLEGAMOS UN CAMPO DE TEXTO LIBRE OBLIGATORIO -->
-            @if (equipoForm.get('nombreEquipo')?.value === 'OTRO') {
-              <div class="col-md-6 mt-2 animate__animated animate__fadeIn">
-                <label class="form-label fw-semibold text-warning">Especifique el Nuevo Equipo / Herramienta *</label>
-                <input type="text" class="form-control border-warning" formControlName="especificacion"
-                      placeholder="Ej: MOTOBOMBA DE ALTO CAUDAL">
-              </div>
-            }
 
             @if (equipoForm.get('nombreEquipo')?.invalid && equipoForm.get('nombreEquipo')?.touched) {
               <div class="text-danger small mt-1">El nombre del equipo es requerido</div>
@@ -174,28 +166,28 @@
             <label class="form-label fw-semibold">Área *</label>
             <select class="form-select shadow-sm" formControlName="areaId"
                     [class.is-invalid]="equipoForm.get('areaId')?.invalid && equipoForm.get('areaId')?.touched">
-              <option value="" disabled>Seleccione área...</option>
-              @for (area of areasActivas(); track area.id)  {
-                <option [value]="area.id">{{ area.nombreArea }}</option>
+              <option [ngValue]="null" disabled>Seleccione área...</option>
+              @for (area of areasActivas(); track area.id) {
+                <option [ngValue]="area.id">{{ area.nombreArea }}</option>
               }
             </select>
             @if (equipoForm.get('areaId')?.invalid && equipoForm.get('areaId')?.touched) {
               <div class="invalid-feedback">El área es requerida</div>
             }
           </div>
-                  <!-- Ubicación (NUEVO) -->
-        <!-- Ubicación Física -->
+
+         <!-- Ubicación Física -->
         <div class="col-md-6">
+          <label class="form-label fw-semibold">Ubicación Física *</label>
           <app-select-ubicacion
-            id="ubicacionId"
-            label="Ubicación Física *"
             formControlName="ubicacionId"
-            [required]="true"
-            [soloActivas]="false"
-            [invalid]="equipoForm.get('ubicacionId')?.invalid || false"
-            [touched]="equipoForm.get('ubicacionId')?.touched || false"
-            errorMessage="La ubicación física de la herramienta es requerida">
+            [requerido]="true"
+            [mostrarInactivas]="false"
+            placeholder="Seleccione ubicación...">
           </app-select-ubicacion>
+          @if (equipoForm.get('ubicacionId')?.invalid && equipoForm.get('ubicacionId')?.touched) {
+            <div class="text-danger small mt-1">La ubicación física es requerida</div>
+          }
         </div>
 
           <!-- Fecha Incorporación -->

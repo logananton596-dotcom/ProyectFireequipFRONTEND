@@ -6,7 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { EquipoService } from '../../../../core/services/equipo.service';
 import { AreaService } from '../../../../core/services/area.service';
 import {
-  NOMBRES_EQUIPO, TIPOS_EQUIPO, TIPOS_INVENTARIO, ESTADOS_EQUIPO,
+  NOMBRES_EQUIPO, TIPOS_EQUIPO, TIPOS_INVENTARIO, ESTADOS_EQUIPO, Equipo,
   formatearNombreEquipo, formatearTipoEquipo, formatearTipoInventario, formatearEstadoEquipo
 } from '../../../../core/models/equipo.model';
 import { COMPANIAS_BOMBERO, formatearCompania } from '../../../../core/models/bombero.model';
@@ -34,6 +34,7 @@ export class EquiposForm implements OnInit, OnDestroy {
   loading = signal(false);
   submitting = signal(false);
   mostrarCamposBaja = signal(false);
+  equipoSignal = signal<Equipo | null>(null);
 
   private subscriptions: Subscription = new Subscription();
 
@@ -75,7 +76,7 @@ export class EquiposForm implements OnInit, OnDestroy {
     observaciones: [''],
     areaId: [null, Validators.required],
     asignado: [false],
-    ubicacionId: [null]
+    ubicacionId: [null, Validators.required]
   }, {
     validators: [
       this.validarCamposBaja.bind(this),
@@ -230,6 +231,7 @@ export class EquiposForm implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.equipoService.getById(this.equipoId).subscribe({
         next: (equipo) => {
+          this.equipoSignal.set(equipo);
           this.equipoForm.patchValue({
             codigoCgbvp: equipo.codigoCgbvp || '',
             numeroSerie: equipo.numeroSerie || '',
@@ -251,7 +253,8 @@ export class EquiposForm implements OnInit, OnDestroy {
             color: equipo.color || '',
             observaciones: equipo.observaciones || '',
             areaId: equipo.areaId,
-            asignado: equipo.asignado
+            asignado: equipo.asignado,
+            ubicacionId: equipo.ubicacionId ?? null,
           });
 
           this.mostrarCamposBaja.set(equipo.estado === 'BAJA');

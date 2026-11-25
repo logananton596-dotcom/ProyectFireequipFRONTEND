@@ -68,18 +68,7 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./modules/ubicaciones/ubicaciones.routes').then(r => r.UBICACIONES_ROUTES)
       },
-      {
-      path: 'oficinas',
-      loadChildren: () =>
-        import('./modules/oficinas/oficina.routes').then(r => r.OFICINA_ROUTES)
-      },
-      {
-      path: 'casilleros',
-      loadChildren: () =>
-        import('./modules/casilleros/casillero.routes')
-          .then(r => r.CASILLERO_ROUTES)
-      },
-      {
+            {
         path: 'asignaciones',
         loadChildren: () =>
           import('./modules/asignaciones/asignacion.routes').then(r => r.ASIGNACION_ROUTES)

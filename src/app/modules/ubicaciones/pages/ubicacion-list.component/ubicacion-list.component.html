@@ -10,22 +10,40 @@
     </button>
   </div>
 
-  <!-- Barra de búsqueda -->
+  <!-- Filtros -->
   <div class="card shadow-sm border-0 mb-4">
     <div class="card-body bg-white rounded">
-      <div class="input-group">
-        <span class="input-group-text bg-light border-end-0 text-muted">
-          <i class="bi bi-search"></i>
-        </span>
-        <input type="text" class="form-control bg-light border-start-0 ps-0" 
-               placeholder="Buscar por código, nombre o observación..."
-               [ngModel]="searchTerm()" (input)="onSearchChange($event)">
-        @if (searchTerm()) {
-          <button class="btn btn-outline-secondary border-start-0" type="button" 
-                  (click)="searchTerm.set(''); paginaActual.set(1)">
-            <i class="bi bi-x-circle-fill text-muted"></i>
+      <div class="row g-2">
+        <div class="col-md-6">
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0 text-muted">
+              <i class="bi bi-search"></i>
+            </span>
+            <input type="text" class="form-control bg-light border-start-0 ps-0"
+                   placeholder="Buscar por código, nombre, padre, área u observación..."
+                   [ngModel]="searchTerm()" (input)="onSearchChange($event)">
+            @if (searchTerm()) {
+              <button class="btn btn-outline-secondary border-start-0" type="button"
+                      (click)="searchTerm.set(''); paginaActual.set(1)">
+                <i class="bi bi-x-circle-fill text-muted"></i>
+              </button>
+            }
+          </div>
+        </div>
+        <div class="col-md-4">
+          <select class="form-select bg-light"
+                  [ngModel]="filtroTipo()" (change)="onFiltroTipoChange($event)">
+            <option value="">Todos los tipos</option>
+            @for (tipo of tiposDisponibles; track tipo) {
+              <option [value]="tipo">{{ formatearTipoUbicacion(tipo) }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-outline-secondary w-100" (click)="limpiarFiltros()">
+            <i class="bi bi-eraser me-1"></i> Limpiar
           </button>
-        }
+        </div>
       </div>
     </div>
   </div>
@@ -48,11 +66,10 @@
       </div>
     } @else {
       <div class="card shadow-sm border-0">
-        <!-- Selector de cantidad -->
         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom-0">
           <div class="d-flex align-items-center gap-2">
             <span class="text-muted small">Mostrar</span>
-            <select class="form-select form-select-sm" style="width: auto;" 
+            <select class="form-select form-select-sm" style="width: auto;"
                     [ngModel]="tamanoPagina()" (ngModelChange)="onTamanoPaginaChange($event)">
               @for (opcion of opcionesTamano; track opcion) {
                 <option [value]="opcion">{{ opcion }} registros</option>
@@ -60,21 +77,21 @@
             </select>
           </div>
           <span class="text-muted small">
-            Mostrando del {{ (paginaActual() - 1) * tamanoPagina() + 1 }} al 
+            Mostrando del {{ (paginaActual() - 1) * tamanoPagina() + 1 }} al
             {{ Math.min(paginaActual() * tamanoPagina(), filteredUbicaciones().length) }} de {{ filteredUbicaciones().length }}
           </span>
         </div>
 
-        <!-- Tabla -->
         <div class="card-body p-0">
           <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
             <table class="table table-lg table-hover align-middle mb-0 text-nowrap">
               <thead class="table-light text-uppercase fs-6 text-muted sticky-top shadow-sm" style="z-index: 1;">
                 <tr>
-                  <th class="ps-4" style="min-width: 100px;">Código</th>
-                  <th style="min-width: 200px;">Nombre</th>
-                  <th style="min-width: 100px;">Estado</th>
-                  <th style="min-width: 200px;">Observación</th>
+                  <th class="ps-4" style="min-width: 120px;">Código</th>
+                  <th style="min-width: 180px;">Nombre</th>
+                  <th style="min-width: 130px;">Tipo</th>
+                  <th style="min-width: 160px;">Padre</th>
+                  <th style="min-width: 140px;">Área</th>
                   <th style="min-width: 100px;">Activa</th>
                   <th class="text-end pe-4">Acciones</th>
                 </tr>
@@ -83,13 +100,29 @@
                 @for (ubicacion of ubicacionesPaginados(); track ubicacion.id) {
                   <tr>
                     <td class="ps-4"><strong>{{ ubicacion.codigo }}</strong></td>
-                    <td>{{ formatearNombreUbicacion(ubicacion.nombreUbicacion) }}</td>
+                    <td>{{ ubicacion.nombre }}</td>
                     <td>
-                      <span class="badge shadow-sm px-3 py-2 fw-bold" [class]="getEstadoUbicacionBadgeClass(ubicacion.estado)">
-                        {{ ubicacion.estado }}
+                      <span class="badge shadow-sm px-3 py-2 fw-bold"
+                            [class]="getTipoUbicacionBadgeClass(ubicacion.tipo)">
+                        {{ formatearTipoUbicacion(ubicacion.tipo, ubicacion.tipoPersonalizado) }}
                       </span>
                     </td>
-                    <td>{{ ubicacion.observacion || 'N/A' }}</td>
+                    <td>
+                      @if (ubicacion.padreNombre) {
+                        <span class="text-muted">
+                          <i class="bi bi-arrow-return-right me-1"></i>{{ ubicacion.padreNombre }}
+                        </span>
+                      } @else {
+                        <span class="text-muted fst-italic">Raíz</span>
+                      }
+                    </td>
+                    <td>
+                      @if (ubicacion.areaNombre) {
+                        {{ ubicacion.areaNombre }}
+                      } @else {
+                        <span class="text-muted fst-italic">—</span>
+                      }
+                    </td>
                     <td>
                       <span class="badge" [class.bg-success]="ubicacion.activa" [class.bg-secondary]="!ubicacion.activa">
                         {{ ubicacion.activa ? 'Sí' : 'No' }}
@@ -112,7 +145,8 @@
                             <i class="bi bi-play-circle"></i>
                           </button>
                         }
-                        <button class="btn btn-outline-danger" (click)="ubicacion.id && eliminar(ubicacion.id, formatearNombreUbicacion(ubicacion.nombreUbicacion))" title="Eliminar">
+                        <button class="btn btn-outline-danger"
+                                (click)="ubicacion.id && eliminar(ubicacion.id, ubicacion.nombre)" title="Eliminar">
                           <i class="bi bi-trash"></i>
                         </button>
                       </div>
@@ -124,7 +158,6 @@
           </div>
         </div>
 
-        <!-- Paginación -->
         <div class="card-footer bg-white py-3 d-flex justify-content-center align-items-center border-top">
           <nav aria-label="Navegación">
             <ul class="pagination pagination-sm mb-0 gap-1">

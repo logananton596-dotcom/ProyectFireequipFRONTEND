@@ -1,6 +1,3 @@
-import { Ubicacion } from './ubicacion.model';
-
-// ==================== ENUMS ====================
 
 export type TipoBien = 
   | 'EQUIPO_INFORMATICO'
@@ -72,8 +69,10 @@ export interface Bien {
   areaId: number;
   areaNombre?: string; 
   ubicacionId: number;
-  codigoUbicacion?: string; // Para mostrar en lista/detalle
-  nombreUbicacion?: string; // Para mostrar en lista/detalle
+  ubicacionCodigo?: string;
+  ubicacionNombre?: string;
+  ubicacionTipo?: string;
+  ubicacionDisplay?: string;
   activo: boolean;
 }
 

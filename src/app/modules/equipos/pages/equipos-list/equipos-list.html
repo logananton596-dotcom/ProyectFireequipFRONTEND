@@ -19,7 +19,7 @@
         </span>
         <input type="text" 
                class="form-control bg-light border-start-0 ps-0" 
-               placeholder="Buscar por código, serie, nombre, tipo, compañía, área o estado..."
+               placeholder="Buscar por código, serie, nombre, tipo, compañía, área, ubicacion o estado..."
                [ngModel]="searchTerm()"
                (input)="onSearchChange($event)">
         @if (searchTerm()) {
@@ -81,6 +81,7 @@
                   <th style="min-width: 100px;">Tipo Inv.</th>
                   <th style="min-width: 140px;">Compañía</th>
                   <th style="min-width: 120px;">Área</th>
+                  <th style="min-width: 180px;">Ubicación</th>
                   <th style="min-width: 100px;">Stock</th>
                   <th style="min-width: 110px;">Estado</th>
                   <th style="min-width: 90px;">Asignado</th>
@@ -97,6 +98,7 @@
                     <td>{{ formatearTipoInventario(equipo.tipoInventario) }}</td>
                     <td>{{ formatearCompania(equipo.compania) }}</td>
                     <td>{{ equipo.areaNombre || '-' }}</td>
+                    <td [title]="equipo.ubicacionDisplay || ''">{{ equipo.ubicacionDisplay || '-' }}</td>
                     <td>{{ equipo.stock }}</td>
                     <td>
                       <span class="badge shadow-sm px-3 py-2 fw-bold" [class]="getEstadoEquipoBadgeClass(equipo.estado)">

@@ -44,3 +44,12 @@
     gap: 0.5rem;
   }
 }
+.ubicacion-detail-container .card-header {
+  border-bottom: 1px solid #e9ecef;
+  padding: 1.25rem 1.5rem;
+}
+
+.ubicacion-detail-container .badge {
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}

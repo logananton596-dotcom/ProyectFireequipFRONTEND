@@ -14,3 +14,8 @@
   border-color: #0d6efd;
   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
 }
+
+.ubicacion-form-container .form-text {
+  font-size: 0.8rem;
+  color: #6c757d;
+}

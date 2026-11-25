@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { BienService } from '../../../../core/services/bien.service';
-import { UbicacionService } from '../../../../core/services/ubicacion.service';
 import {
   Bien,
   formatearTipoBien,
@@ -12,7 +11,6 @@ import {
   getEstadoBienBadgeClass,
   getCondicionBienBadgeClass
 } from '../../../../core/models/bien.model';
-import { Ubicacion, getUbicacionDisplay } from '../../../../core/models/ubicacion.model';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -26,11 +24,9 @@ export class BienDetailComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private bienService = inject(BienService);
-  private ubicacionService = inject(UbicacionService);
   private toastr = inject(ToastrService);
 
   bien = signal<Bien | null>(null);
-  ubicacion = signal<Ubicacion | null>(null);
   loading = signal(false);
   private subscriptions: Subscription = new Subscription();
 
@@ -40,7 +36,6 @@ export class BienDetailComponent implements OnInit, OnDestroy {
   formatearCondicionBien = formatearCondicionBien;
   getEstadoBienBadgeClass = getEstadoBienBadgeClass;
   getCondicionBienBadgeClass = getCondicionBienBadgeClass;
-  getUbicacionDisplay = getUbicacionDisplay;
 
   ngOnInit(): void {
     this.loadBien();
@@ -58,7 +53,6 @@ export class BienDetailComponent implements OnInit, OnDestroy {
       this.bienService.getById(id).subscribe({
         next: (bien) => {
           this.bien.set(bien);
-          this.cargarUbicacion(bien.ubicacionId);
           this.loading.set(false);
         },
         error: () => {
@@ -66,15 +60,6 @@ export class BienDetailComponent implements OnInit, OnDestroy {
           this.loading.set(false);
           this.router.navigate(['/bienes']);
         }
-      })
-    );
-  }
-
-  private cargarUbicacion(ubicacionId: number): void {
-    this.subscriptions.add(
-      this.ubicacionService.getById(ubicacionId).subscribe({
-        next: (ubicacion) => this.ubicacion.set(ubicacion),
-        error: () => this.ubicacion.set(null)
       })
     );
   }

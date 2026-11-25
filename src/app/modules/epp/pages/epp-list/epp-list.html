@@ -96,7 +96,9 @@
                     <td><span class="badge bg-light text-dark border">{{ formatearTipoEpp(epp.tipoEpp) }}</span></td>
                     <td>{{ formatearCompania(epp.compania) }}</td>
                     <td>{{ epp.areaNombre || '-' }}</td>
-                    <td>{{ getUbicacionNombre(epp.ubicacionId) }}</td>
+                    <td [title]="epp.ubicacionDisplay || ''">
+                      {{ epp.ubicacionDisplay || '-' }}
+                    </td>
                     <td>
                       <span class="badge shadow-sm px-3 py-2 fw-bold" [class]="getEstadoEppBadgeClass(epp.estado)">
                         {{ epp.estado }}

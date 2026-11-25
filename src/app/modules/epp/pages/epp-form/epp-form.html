@@ -164,19 +164,18 @@
           }
         </div>
 
-        <!-- Ubicación (NUEVO) -->
         <!-- Ubicación Física -->
         <div class="col-md-6">
+          <label class="form-label fw-semibold">Ubicación Física *</label>
           <app-select-ubicacion
-            id="ubicacionId"
-            label="Ubicación Física *"
             formControlName="ubicacionId"
-            [required]="true"
-            [soloActivas]="false"
-            [invalid]="eppForm.get('ubicacionId')?.invalid || false"
-            [touched]="eppForm.get('ubicacionId')?.touched || false"
-            errorMessage="La ubicación física de la herramienta es requerida">
+            [requerido]="true"
+            [mostrarInactivas]="false"
+            placeholder="Seleccione ubicación...">
           </app-select-ubicacion>
+          @if (eppForm.get('ubicacionId')?.invalid && eppForm.get('ubicacionId')?.touched) {
+            <div class="text-danger small mt-1">La ubicación física es requerida</div>
+          }
         </div>
 
 
@@ -259,14 +258,13 @@
           <div class="col-12 mt-2">
             <div class="form-check bg-light border rounded px-4 py-2">
               <input type="checkbox" class="form-check-input" id="asignado"
-                     [checked]="false" disabled>
+                    [checked]="eppSignal()?.asignado ?? false" disabled>
               <label class="form-check-label fw-semibold text-muted" for="asignado">
                 Asignado (Este campo lo modifica el módulo de Asignaciones)
               </label>
             </div>
           </div>
         </div>
-
         <!-- Botones -->
         <div class="mt-4 d-flex gap-2 justify-content-end border-top pt-3">
           <button type="button" class="btn btn-light border px-4" (click)="cancelar()">
