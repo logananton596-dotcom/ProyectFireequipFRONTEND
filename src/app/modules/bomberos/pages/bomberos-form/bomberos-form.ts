@@ -7,11 +7,12 @@ import { BomberoService } from '../../../../core/services/bombero.service';
 import { ESTADOS_BOMBERO, GRADOS_BOMBERO, TIPOS_CARGO, TIPOS_SANGRE,  COMPANIAS_BOMBERO, TIPOS_VEHICULO_LICENCIA, TIPOS_LICENCIA, formatearCompania, formatearTipoLicencia, formatearTipoVehiculo  } from '../../../../core/models/bombero.model';
 import { Subscription } from 'rxjs';
 import { ModalMotivoComponent } from '../../components/modal-motivo/modal-motivo.component';
+import { SelectUbicacionComponent } from '../../../../shared/components/select-ubicacion/select-ubicacion.component';
 
 @Component({
   selector: 'app-bomberos-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ModalMotivoComponent],
+  imports: [CommonModule, ReactiveFormsModule, ModalMotivoComponent,SelectUbicacionComponent],
   templateUrl: './bomberos-form.html',
   styleUrls: ['./bomberos-form.css']
 })
@@ -82,7 +83,8 @@ export class BomberosForm implements OnInit, OnDestroy {
     tipoVehiculoLicencia: ['NINGUNO', Validators.required],                        
     limitacionSalud: ['', Validators.maxLength(500)],    
     tieneLimitacionSalud: [false, Validators.required],   
-    motivoEstado: [null],                
+    motivoEstado: [null],
+    casilleroId: [null]                
   });
 
 
@@ -199,7 +201,8 @@ export class BomberosForm implements OnInit, OnDestroy {
             tipoLicencia: bombero.tipoLicencia || 'NINGUNO', 
             tipoVehiculoLicencia: bombero.tipoVehiculoLicencia || 'NINGUNO', 
             limitacionSalud: bombero.limitacionSalud || '' ,
-            motivoEstado: bombero.motivoEstado || null
+            motivoEstado: bombero.motivoEstado || null,
+            casilleroId: bombero.casilleroId ?? null
 
           });
 

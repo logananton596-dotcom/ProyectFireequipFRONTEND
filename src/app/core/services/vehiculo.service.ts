@@ -33,8 +33,20 @@ export class VehiculoService extends ApiService {
     return this.delete<void>(`vehiculos/${id}`);
   }
 
-  // Cambiar estado
-  cambiarEstado(id: number, nuevoEstado: string): Observable<void> {
-    return this.patch<void>(`vehiculos/${id}/estado?nuevoEstado=${nuevoEstado}`);
+    // Activar / Desactivar (coincide con @PatchMapping("/{id}/activar") y "/desactivar")
+  activar(id: number): Observable<Vehiculo> {
+    return this.patch<Vehiculo>(`vehiculos/${id}/activar`);
+  }
+
+  desactivar(id: number): Observable<Vehiculo> {
+    return this.patch<Vehiculo>(`vehiculos/${id}/desactivar`);
+  }
+
+  cambiarEstado(id: number, nuevoEstado: string): Observable<Vehiculo> {
+    return this.patch<Vehiculo>(`vehiculos/${id}/estado?nuevoEstado=${nuevoEstado}`);
+  }
+
+  getActivosOperativos(): Observable<Vehiculo[]> {
+    return this.get<Vehiculo[]>('vehiculos/activos/operativos');
   }
 }

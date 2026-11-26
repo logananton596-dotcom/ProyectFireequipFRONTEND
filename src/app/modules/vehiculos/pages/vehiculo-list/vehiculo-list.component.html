@@ -17,13 +17,13 @@
         <span class="input-group-text bg-light border-end-0 text-muted">
           <i class="bi bi-search"></i>
         </span>
-        <input type="text" 
-               class="form-control bg-light border-start-0 ps-0" 
-               placeholder="Buscar por código, nombre, placa, marca, tipo, modelo..."
+        <input type="text"
+               class="form-control bg-light border-start-0 ps-0"
+               placeholder="Buscar por código, nombre, placa, marca, tipo, modelo, ubicación..."
                [ngModel]="searchTerm()"
                (input)="onSearchChange($event)">
         @if (searchTerm()) {
-          <button class="btn btn-outline-secondary border-start-0" type="button" 
+          <button class="btn btn-outline-secondary border-start-0" type="button"
                   (click)="searchTerm.set(''); paginaActual.set(1)">
             <i class="bi bi-x-circle-fill text-muted"></i>
           </button>
@@ -54,8 +54,8 @@
         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom-0">
           <div class="d-flex align-items-center gap-2">
             <span class="text-muted small">Mostrar</span>
-            <select class="form-select form-select-sm" style="width: auto;" 
-                    [ngModel]="tamanoPagina()" 
+            <select class="form-select form-select-sm" style="width: auto;"
+                    [ngModel]="tamanoPagina()"
                     (ngModelChange)="onTamanoPaginaChange($event)">
               @for (opcion of opcionesTamano; track opcion) {
                 <option [value]="opcion">{{ opcion }} registros</option>
@@ -63,7 +63,7 @@
             </select>
           </div>
           <span class="text-muted small">
-            Mostrando del {{ (paginaActual() - 1) * tamanoPagina() + 1 }} al 
+            Mostrando del {{ (paginaActual() - 1) * tamanoPagina() + 1 }} al
             {{ Math.min(paginaActual() * tamanoPagina(), filteredVehiculos().length) }} de {{ filteredVehiculos().length }}
           </span>
         </div>
@@ -75,13 +75,13 @@
               <thead class="table-light text-uppercase fs-6 text-muted sticky-top shadow-sm" style="z-index: 1;">
                 <tr>
                   <th class="ps-4" style="min-width: 100px;">Código</th>
-                  <th style="min-width: 120px;">Nombre</th>
-                  <th style="min-width: 120px;">Placa</th>
-                  <th style="min-width: 100px;">Marca</th>
+                  <th style="min-width: 140px;">Nombre</th>
+                  <th style="min-width: 100px;">Placa</th>
+                  <th style="min-width: 110px;">Marca</th>
+                  <th style="min-width: 110px;">Modelo</th>
                   <th style="min-width: 110px;">Tipo</th>
                   <th style="min-width: 110px;">Estado</th>
-                  <th style="min-width: 120px;">Ubicación</th>
-                  <th style="min-width: 100px;">Modelo</th>
+                  <th style="min-width: 160px;">Ubicación</th>
                   <th style="min-width: 80px;">Año</th>
                   <th class="text-end pe-4" style="min-width: 150px;">Acciones</th>
                 </tr>
@@ -90,33 +90,46 @@
                 @for (vehiculo of vehiculosPaginados(); track vehiculo.id) {
                   <tr>
                     <td class="ps-4"><strong>{{ vehiculo.codigo }}</strong></td>
-                    <td>{{ formatearNombreVehiculo(vehiculo.nombreVehiculo) }}</td>
-                    <td>{{ vehiculo.placa }}</td>
-                    <td>{{ formatearMarcaVehiculo(vehiculo.marca) }}</td>
-                    <td>{{ formatearTipoVehiculo(vehiculo.tipoVehiculo) }}</td>
+                    <td>{{ vehiculo.nombreVehiculo }}</td>
+                    <td>{{ vehiculo.placa || 'N/A' }}</td>
+                    <td>{{ vehiculo.marca }}</td>
+                    <td>{{ vehiculo.modelo || 'N/A' }}</td>
                     <td>
-                      <span class="badge shadow-sm px-3 py-2 fw-bold" 
+                      <span class="badge bg-light text-dark border">
+                        {{ formatearTipoVehiculo(vehiculo.tipoVehiculo) }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge shadow-sm px-3 py-2 fw-bold"
                             [class]="getEstadoVehiculoBadgeClass(vehiculo.estado)">
                         {{ formatearEstadoVehiculo(vehiculo.estado) }}
                       </span>
                     </td>
-                    <td>{{ vehiculo.nombreUbicacion }}</td>
-                    <td>{{ vehiculo.modelo || 'N/A' }}</td>
+                    <td>
+                      @if (vehiculo.ubicacionNodoNombre) {
+                        <span [title]="getUbicacionNodoDisplay(vehiculo)">
+                          {{ vehiculo.ubicacionNodoNombre }}
+                        </span>
+                      } @else {
+                        <span class="text-muted fst-italic">Sin ubicación</span>
+                      }
+                    </td>
                     <td>{{ vehiculo.anio || 'N/A' }}</td>
                     <td class="text-end pe-4">
                       <div class="btn-group btn-group-sm shadow-sm">
-                        <button class="btn btn-outline-secondary" 
+                        <button class="btn btn-outline-secondary"
                                 (click)="vehiculo.id && verDetalle(vehiculo.id)" title="Ver Detalle">
                           <i class="bi bi-eye"></i>
                         </button>
-                        <button class="btn btn-outline-primary" 
+                        <button class="btn btn-outline-primary"
                                 (click)="vehiculo.id && editar(vehiculo.id)" title="Editar">
                           <i class="bi bi-pencil"></i>
                         </button>
                         @if (vehiculo.estado !== 'BAJA') {
                           <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-outline-warning dropdown-toggle" 
-                                    data-bs-toggle="dropdown" aria-expanded="false" title="Cambiar Estado">
+                            <button type="button" class="btn btn-outline-warning dropdown-toggle"
+                                    data-bs-toggle="dropdown" data-bs-boundary="viewport" 
+                                    aria-expanded="false" title="Cambiar Estado">
                               <i class="bi bi-arrow-repeat"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
@@ -130,17 +143,20 @@
                                   <i class="bi bi-tools text-warning me-2"></i> MANTENIMIENTO
                                 </a></li>
                               }
-                              @if ($any(vehiculo.estado) !== 'BAJA') {
-                                <li>
-                                  <a class="dropdown-item" (click)="cambiarEstado(vehiculo.id!, vehiculo.nombreVehiculo, 'BAJA')">
-                                    <i class="bi bi-x-circle text-danger me-2"></i> BAJA
-                                  </a>
-                                </li>
+                              @if (vehiculo.estado !== 'FUERA_DE_SERVICIO') {
+                                <li><a class="dropdown-item" (click)="cambiarEstado(vehiculo.id!, vehiculo.nombreVehiculo, 'FUERA_DE_SERVICIO')">
+                                  <i class="bi bi-pause-circle text-secondary me-2"></i> FUERA DE SERVICIO
+                                </a></li>
                               }
+                              <li>
+                                <a class="dropdown-item" (click)="cambiarEstado(vehiculo.id!, vehiculo.nombreVehiculo, 'BAJA')">
+                                  <i class="bi bi-x-circle text-danger me-2"></i> BAJA
+                                </a>
+                              </li>
                             </ul>
                           </div>
                         }
-                        <button class="btn btn-outline-danger" 
+                        <button class="btn btn-outline-danger"
                                 (click)="vehiculo.id && eliminar(vehiculo.id, vehiculo.nombreVehiculo)" title="Eliminar">
                           <i class="bi bi-trash"></i>
                         </button>

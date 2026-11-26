@@ -1,22 +1,24 @@
 import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { VehiculoService } from '../../../../core/services/vehiculo.service';
 import {
   Vehiculo,
-  formatearNombreVehiculo,
-  formatearMarcaVehiculo,
+  EstadoVehiculo,
   formatearTipoVehiculo,
   formatearEstadoVehiculo,
-  getEstadoVehiculoBadgeClass
+  formatearTipoCombustible,
+  formatearTipoLlanta,
+  getEstadoVehiculoBadgeClass,
+  getUbicacionNodoDisplay
 } from '../../../../core/models/vehiculo.model';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-vehiculo-detail',
   standalone: true,
-  imports: [CommonModule,RouterLink],
+  imports: [CommonModule],
   templateUrl: './vehiculo-detail.component.html',
   styleUrls: ['./vehiculo-detail.component.css']
 })
@@ -31,11 +33,12 @@ export class VehiculoDetailComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription = new Subscription();
 
   // Helpers
-  formatearNombreVehiculo = formatearNombreVehiculo;
-  formatearMarcaVehiculo = formatearMarcaVehiculo;
   formatearTipoVehiculo = formatearTipoVehiculo;
   formatearEstadoVehiculo = formatearEstadoVehiculo;
+  formatearTipoCombustible = formatearTipoCombustible;
+  formatearTipoLlanta = formatearTipoLlanta;
   getEstadoVehiculoBadgeClass = getEstadoVehiculoBadgeClass;
+  getUbicacionNodoDisplay = getUbicacionNodoDisplay;
 
   ngOnInit(): void {
     this.loadVehiculo();
@@ -51,8 +54,8 @@ export class VehiculoDetailComponent implements OnInit, OnDestroy {
     this.loading.set(true);
     this.subscriptions.add(
       this.vehiculoService.getById(id).subscribe({
-        next: (vehiculo) => {
-          this.vehiculo.set(vehiculo);
+        next: (v) => {
+          this.vehiculo.set(v);
           this.loading.set(false);
         },
         error: () => {
@@ -64,21 +67,20 @@ export class VehiculoDetailComponent implements OnInit, OnDestroy {
     );
   }
 
-  // Acciones
   editar(): void {
-    const vehiculo = this.vehiculo();
-    if (vehiculo?.id) {
-      this.router.navigate(['/vehiculos', vehiculo.id, 'editar']);
+    const v = this.vehiculo();
+    if (v?.id) {
+      this.router.navigate(['/vehiculos', v.id, 'editar']);
     }
   }
 
   eliminar(): void {
-    const vehiculo = this.vehiculo();
-    if (!vehiculo) return;
+    const v = this.vehiculo();
+    if (!v) return;
 
-    if (confirm(`¿Está seguro de eliminar el vehículo "${vehiculo.nombreVehiculo}"?`)) {
+    if (confirm(`¿Está seguro de eliminar el vehículo "${v.nombreVehiculo}"?`)) {
       this.subscriptions.add(
-        this.vehiculoService.deleteById(vehiculo.id!).subscribe({
+        this.vehiculoService.deleteById(v.id!).subscribe({
           next: () => {
             this.toastr.success('Vehículo eliminado correctamente', 'Éxito');
             this.router.navigate(['/vehiculos']);
@@ -91,16 +93,17 @@ export class VehiculoDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  cambiarEstado(nuevoEstado: string): void {
-    const vehiculo = this.vehiculo();
-    if (!vehiculo) return;
+  cambiarEstado(nuevoEstado: EstadoVehiculo): void {
+    const v = this.vehiculo();
+    if (!v) return;
 
-    if (confirm(`¿Cambiar estado del vehículo "${vehiculo.nombreVehiculo}" a ${nuevoEstado}?`)) {
+    const etiqueta = this.formatearEstadoVehiculo(nuevoEstado);
+    if (confirm(`¿Cambiar estado del vehículo "${v.nombreVehiculo}" a ${etiqueta}?`)) {
       this.subscriptions.add(
-        this.vehiculoService.cambiarEstado(vehiculo.id!, nuevoEstado).subscribe({
-          next: () => {
-            this.toastr.success(`Estado actualizado a ${nuevoEstado}`, 'Éxito');
-            this.loadVehiculo();
+        this.vehiculoService.cambiarEstado(v.id!, nuevoEstado).subscribe({
+          next: (vehiculoActualizado) => {
+            this.vehiculo.set(vehiculoActualizado);
+            this.toastr.success(`Estado actualizado a ${etiqueta}`, 'Éxito');
           },
           error: (error) => {
             this.toastr.error(error.error?.message || 'Error al cambiar estado', 'Error');
@@ -114,8 +117,7 @@ export class VehiculoDetailComponent implements OnInit, OnDestroy {
     this.router.navigate(['/vehiculos']);
   }
 
-  // Formatear fecha
-  formatFecha(date: Date | string | undefined): string {
+  formatFecha(date: Date | string | null | undefined): string {
     if (!date) return 'N/A';
     const d = new Date(date);
     return d.toLocaleDateString('es-PE', {
@@ -125,20 +127,8 @@ export class VehiculoDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Obtener badge de estado
-  getEstadoBadgeClass(estado: string): string {
-    switch (estado) {
-      case 'OPERATIVO': return 'bg-success text-white';
-      case 'MANTENIMIENTO': return 'bg-warning text-dark';
-      case 'BAJA': return 'bg-danger text-white';
-      default: return 'bg-secondary text-white';
-    }
-  }
-
-  // Verificar si se puede cambiar estado
   puedeCambiarEstado(): boolean {
-    const vehiculo = this.vehiculo();
-    return vehiculo?.estado !== 'BAJA';
+    return this.vehiculo()?.estado !== 'BAJA';
   }
 
   ngOnDestroy(): void {

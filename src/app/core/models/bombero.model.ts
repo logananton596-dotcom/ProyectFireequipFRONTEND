@@ -28,7 +28,13 @@ export interface Bombero {
   tieneCargo: boolean;             
   tipoCargo: TipoCargo;            
   fechaInicioCargo?: Date | string | null;  
-  fechaFinCargo?: Date | string | null;     
+  fechaFinCargo?: Date | string | null;  
+  
+  // ==================== CASILLERO ====================
+  casilleroId?: number | null;
+  casilleroNombre?: string;
+  casilleroCodigo?: string;
+  casilleroDisplay?: string;
 }
 
 export type EstadoBombero = 'ACTIVO' | 'RESERVA' | 'BAJA';

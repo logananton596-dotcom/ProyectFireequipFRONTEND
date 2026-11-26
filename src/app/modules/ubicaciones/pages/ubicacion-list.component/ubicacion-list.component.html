@@ -20,7 +20,7 @@
               <i class="bi bi-search"></i>
             </span>
             <input type="text" class="form-control bg-light border-start-0 ps-0"
-                   placeholder="Buscar por código, nombre, padre, área u observación..."
+                   placeholder="Buscar por código, nombre, padre, área, ocupante u observación..."
                    [ngModel]="searchTerm()" (input)="onSearchChange($event)">
             @if (searchTerm()) {
               <button class="btn btn-outline-secondary border-start-0" type="button"
@@ -92,6 +92,7 @@
                   <th style="min-width: 130px;">Tipo</th>
                   <th style="min-width: 160px;">Padre</th>
                   <th style="min-width: 140px;">Área</th>
+                  <th style="min-width: 160px;">Ocupado por</th>
                   <th style="min-width: 100px;">Activa</th>
                   <th class="text-end pe-4">Acciones</th>
                 </tr>
@@ -121,6 +122,17 @@
                         {{ ubicacion.areaNombre }}
                       } @else {
                         <span class="text-muted fst-italic">—</span>
+                      }
+                    </td>
+                    <td>
+                      @if (ubicacion.bomberoAsignadoNombre) {
+                        <span class="badge bg-info text-dark">
+                          <i class="bi bi-person-fill me-1"></i>{{ ubicacion.bomberoAsignadoNombre }}
+                        </span>
+                      } @else if (ubicacion.tipo === 'CASILLERO') {
+                        <span class="text-muted small fst-italic">Libre</span>
+                      } @else {
+                        <span class="text-muted">—</span>
                       }
                     </td>
                     <td>

@@ -161,6 +161,18 @@
                 <th>Correo:</th>  
                 <td>{{ bombero()?.correo || 'N/A' }}</td>
               </tr>
+              <tr>
+              <th>Casillero:</th>
+                <td>
+                  @if (bombero()?.casilleroDisplay) {
+                    <span class="badge bg-light text-dark border">
+                      <i class="bi bi-lock me-1"></i>{{ bombero()!.casilleroDisplay }}
+                    </span>
+                  } @else {
+                    <span class="text-muted fst-italic">Sin casillero asignado</span>
+                  }
+                </td>
+              </tr>
             </table>
           </div>
         </div>

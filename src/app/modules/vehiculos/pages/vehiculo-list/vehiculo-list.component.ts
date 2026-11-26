@@ -3,14 +3,13 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { VehiculoService } from '../../../../core/services/vehiculo.service';
-import { 
-  Vehiculo, 
-  formatearNombreVehiculo, 
-  formatearMarcaVehiculo,
+import {
+  Vehiculo,
+  EstadoVehiculo,
   formatearTipoVehiculo,
   formatearEstadoVehiculo,
   getEstadoVehiculoBadgeClass,
-  EstadoVehiculo
+  getUbicacionNodoDisplay
 } from '../../../../core/models/vehiculo.model';
 import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
@@ -38,35 +37,34 @@ export class VehiculoListComponent implements OnInit, OnDestroy {
   opcionesTamano = [5, 10, 25, 50];
 
   // Helpers
-  formatearNombreVehiculo = formatearNombreVehiculo;
-  formatearMarcaVehiculo = formatearMarcaVehiculo;
   formatearTipoVehiculo = formatearTipoVehiculo;
   formatearEstadoVehiculo = formatearEstadoVehiculo;
   getEstadoVehiculoBadgeClass = getEstadoVehiculoBadgeClass;
+  getUbicacionNodoDisplay = getUbicacionNodoDisplay;
 
-  // Filtro
   filteredVehiculos = computed<Vehiculo[]>(() => {
     const term = this.searchTerm().toLowerCase().trim();
     const listaOriginal = this.vehiculosSignal();
 
     if (!term) return listaOriginal;
 
-    return listaOriginal.filter(vehiculo =>
-      (vehiculo.codigo && vehiculo.codigo.toLowerCase().includes(term)) ||
-      (vehiculo.nombreVehiculo && (vehiculo.nombreVehiculo as string).toLowerCase().includes(term)) ||
-      (vehiculo.placa && vehiculo.placa.toLowerCase().includes(term)) ||
-      (vehiculo.marca && (vehiculo.marca as string).toLowerCase().includes(term)) ||
-      (vehiculo.tipoVehiculo && (vehiculo.tipoVehiculo as string).toLowerCase().includes(term)) ||
-      (vehiculo.estado && (vehiculo.estado as string).toLowerCase().includes(term)) || // 🌟 Casteo seguro
-      (vehiculo.modelo && vehiculo.modelo.toLowerCase().includes(term))
+    return listaOriginal.filter(v =>
+      (v.codigo && v.codigo.toLowerCase().includes(term)) ||
+      (v.nombreVehiculo && v.nombreVehiculo.toLowerCase().includes(term)) ||
+      (v.placa && v.placa.toLowerCase().includes(term)) ||
+      (v.marca && v.marca.toLowerCase().includes(term)) ||
+      (v.modelo && v.modelo.toLowerCase().includes(term)) ||
+      (v.tipoVehiculo && v.tipoVehiculo.toLowerCase().includes(term)) ||
+      (v.estado && v.estado.toLowerCase().includes(term)) ||
+      (v.ubicacionNodoNombre && v.ubicacionNodoNombre.toLowerCase().includes(term)) ||
+      (v.numeroMotor && v.numeroMotor.toLowerCase().includes(term)) ||
+      (v.numeroChasis && v.numeroChasis.toLowerCase().includes(term))
     );
-
   });
 
   vehiculosPaginados = computed(() => {
     const inicio = (this.paginaActual() - 1) * this.tamanoPagina();
-    const fin = inicio + this.tamanoPagina();
-    return this.filteredVehiculos().slice(inicio, fin);
+    return this.filteredVehiculos().slice(inicio, inicio + this.tamanoPagina());
   });
 
   totalPaginas = computed(() => {
@@ -123,13 +121,17 @@ export class VehiculoListComponent implements OnInit, OnDestroy {
     }
   }
 
- cambiarEstado(id: number, nombre: string, nuevoEstado: EstadoVehiculo): void {
-    if (confirm(`¿Cambiar estado del vehículo "${nombre}" a ${nuevoEstado}?`)) {
+  cambiarEstado(id: number, nombre: string, nuevoEstado: EstadoVehiculo): void {
+    const etiqueta = this.formatearEstadoVehiculo(nuevoEstado);
+    if (confirm(`¿Cambiar estado del vehículo "${nombre}" a ${etiqueta}?`)) {
       this.subscriptions.add(
         this.vehiculoService.cambiarEstado(id, nuevoEstado).subscribe({
-          next: () => {
-            this.toastr.success(`Estado actualizado a ${nuevoEstado}`, 'Éxito');
-            this.loadVehiculos();
+          next: (vehiculoActualizado) => {
+            this.vehiculosSignal.update(lista =>
+              lista.map(v => (v.id === id ? vehiculoActualizado : v))
+            );
+            this.toastr.success(`Estado actualizado a ${etiqueta}`, 'Éxito');
+            this.cdRef.detectChanges();
           },
           error: (error) => {
             this.toastr.error(error.error?.message || 'Error al cambiar estado', 'Error');
@@ -137,16 +139,6 @@ export class VehiculoListComponent implements OnInit, OnDestroy {
           }
         })
       );
-    }
-  }
-
-  // Estado badge
-  getEstadoBadgeClass(estado: EstadoVehiculo): string {
-    switch (estado) {
-      case 'OPERATIVO': return 'bg-success text-white';
-      case 'MANTENIMIENTO': return 'bg-warning text-dark';
-      case 'BAJA': return 'bg-danger text-white';
-      default: return 'bg-secondary text-white';
     }
   }
 

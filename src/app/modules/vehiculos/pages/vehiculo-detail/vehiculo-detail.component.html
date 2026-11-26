@@ -19,18 +19,22 @@
   @if (!loading() && vehiculo()) {
     <div class="card shadow-sm border-0">
       <!-- Header -->
-      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
         <h4 class="card-title mb-0 fw-bold text-dark">
           <i class="bi bi-truck text-primary me-2"></i>
-          {{ formatearNombreVehiculo(vehiculo()!.nombreVehiculo) }}
-          <span class="badge ms-2" [class]="getEstadoBadgeClass(vehiculo()!.estado)">
+          {{ vehiculo()!.codigo }} - {{ vehiculo()!.nombreVehiculo }}
+          <span class="badge ms-2"
+                [class]="getEstadoVehiculoBadgeClass(vehiculo()!.estado)">
             {{ formatearEstadoVehiculo(vehiculo()!.estado) }}
           </span>
+          @if (vehiculo()!.activo === false) {
+            <span class="badge bg-secondary ms-1">Inactivo</span>
+          }
         </h4>
-        <div>
+        <div class="d-flex gap-2 flex-wrap">
           @if (puedeCambiarEstado()) {
-            <div class="btn-group me-2" role="group">
-              <button type="button" class="btn btn-outline-warning dropdown-toggle" 
+            <div class="btn-group" role="group">
+              <button type="button" class="btn btn-outline-warning dropdown-toggle"
                       data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-arrow-repeat me-1"></i> Cambiar Estado
               </button>
@@ -45,21 +49,22 @@
                     <i class="bi bi-tools text-warning me-2"></i> MANTENIMIENTO
                   </a></li>
                 }
-                @if (vehiculo()!.estado !== 'BAJA') {
-                  <li><a class="dropdown-item" (click)="cambiarEstado('BAJA')">
-                    <i class="bi bi-x-circle text-danger me-2"></i> BAJA
+                @if (vehiculo()!.estado !== 'FUERA_DE_SERVICIO') {
+                  <li><a class="dropdown-item" (click)="cambiarEstado('FUERA_DE_SERVICIO')">
+                    <i class="bi bi-pause-circle text-secondary me-2"></i> FUERA DE SERVICIO
                   </a></li>
                 }
+                <li><a class="dropdown-item" (click)="cambiarEstado('BAJA')">
+                  <i class="bi bi-x-circle text-danger me-2"></i> BAJA
+                </a></li>
               </ul>
             </div>
           }
-          <button class="btn btn-primary me-2" (click)="editar()">
-            <i class="bi bi-pencil"></i>
-            Editar
+          <button class="btn btn-primary" (click)="editar()">
+            <i class="bi bi-pencil"></i> Editar
           </button>
           <button class="btn btn-danger" (click)="eliminar()">
-            <i class="bi bi-trash"></i>
-            Eliminar
+            <i class="bi bi-trash"></i> Eliminar
           </button>
         </div>
       </div>
@@ -77,12 +82,30 @@
                 <td><strong>{{ vehiculo()!.codigo }}</strong></td>
               </tr>
               <tr>
-                <th>Nombre Vehículo:</th>
-                <td>{{ formatearNombreVehiculo(vehiculo()!.nombreVehiculo) }}</td>
+                <th>Nombre:</th>
+                <td>{{ vehiculo()!.nombreVehiculo }}</td>
               </tr>
               <tr>
                 <th>Placa:</th>
-                <td><strong>{{ vehiculo()!.placa }}</strong></td>
+                <td>
+                  @if (vehiculo()!.placa) {
+                    <strong>{{ vehiculo()!.placa }}</strong>
+                  } @else {
+                    <span class="text-muted fst-italic">Sin placa</span>
+                  }
+                </td>
+              </tr>
+              <tr>
+                <th>Marca:</th>
+                <td>{{ vehiculo()!.marca }}</td>
+              </tr>
+              <tr>
+                <th>Modelo:</th>
+                <td>{{ vehiculo()!.modelo || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Año:</th>
+                <td>{{ vehiculo()!.anio || 'N/A' }}</td>
               </tr>
             </table>
 
@@ -91,17 +114,16 @@
             </h6>
             <table class="table table-borderless">
               <tr>
-                <th width="40%">Marca:</th>
-                <td>{{ formatearMarcaVehiculo(vehiculo()!.marca) }}</td>
-              </tr>
-              <tr>
-                <th>Tipo Vehículo:</th>
-                <td>{{ formatearTipoVehiculo(vehiculo()!.tipoVehiculo) }}</td>
+                <th width="40%">Tipo:</th>
+                <td><span class="badge bg-light text-dark border">
+                  {{ formatearTipoVehiculo(vehiculo()!.tipoVehiculo) }}
+                </span></td>
               </tr>
               <tr>
                 <th>Estado:</th>
                 <td>
-                  <span class="badge shadow-sm px-3 py-2 fw-bold" [class]="getEstadoBadgeClass(vehiculo()!.estado)">
+                  <span class="badge shadow-sm px-3 py-2 fw-bold"
+                        [class]="getEstadoVehiculoBadgeClass(vehiculo()!.estado)">
                     {{ formatearEstadoVehiculo(vehiculo()!.estado) }}
                   </span>
                 </td>
@@ -109,30 +131,21 @@
               <tr>
                 <th>Activo:</th>
                 <td>
-                  <span class="badge" [class.bg-success]="vehiculo()!.activo" [class.bg-secondary]="!vehiculo()!.activo">
+                  <span class="badge"
+                        [class.bg-success]="vehiculo()!.activo"
+                        [class.bg-secondary]="!vehiculo()!.activo">
                     {{ vehiculo()!.activo ? 'Sí' : 'No' }}
                   </span>
                 </td>
               </tr>
             </table>
-          </div>
 
-          <!-- Columna Derecha -->
-          <div class="col-md-6">
-            <h6 class="text-muted border-bottom pb-2 mb-3">
-              <i class="bi bi-gear me-2"></i>Datos Técnicos
+            <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">
+              <i class="bi bi-123 me-2"></i>Números
             </h6>
             <table class="table table-borderless">
               <tr>
-                <th width="40%">Modelo:</th>
-                <td>{{ vehiculo()!.modelo || 'N/A' }}</td>
-              </tr>
-              <tr>
-                <th>Año:</th>
-                <td>{{ vehiculo()!.anio || 'N/A' }}</td>
-              </tr>
-              <tr>
-                <th>Número Motor:</th>
+                <th width="40%">Número Motor:</th>
                 <td>{{ vehiculo()!.numeroMotor || 'N/A' }}</td>
               </tr>
               <tr>
@@ -140,18 +153,63 @@
                 <td>{{ vehiculo()!.numeroChasis || 'N/A' }}</td>
               </tr>
             </table>
+          </div>
 
-            <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">
+          <!-- Columna Derecha -->
+          <div class="col-md-6">
+            <h6 class="text-muted border-bottom pb-2 mb-3">
               <i class="bi bi-droplet me-2"></i>Capacidades
             </h6>
             <table class="table table-borderless">
               <tr>
                 <th width="40%">Capacidad Agua:</th>
-                <td>{{ vehiculo()!.capacidadAgua ? (vehiculo()!.capacidadAgua + ' L') : 'N/A' }}</td>
+                <td>
+                  @if (vehiculo()!.capacidadAguaLitros) {
+                    {{ vehiculo()!.capacidadAguaLitros }} L
+                  } @else {
+                    <span class="text-muted fst-italic">N/A</span>
+                  }
+                </td>
               </tr>
               <tr>
-                <th>Capacidad Espuma:</th>
-                <td>{{ vehiculo()!.capacidadEspuma ? (vehiculo()!.capacidadEspuma + ' L') : 'N/A' }}</td>
+                <th>Capacidad Combustible:</th>
+                <td>
+                  @if (vehiculo()!.capacidadCombustibleGalones) {
+                    {{ vehiculo()!.capacidadCombustibleGalones }} gal
+                  } @else {
+                    <span class="text-muted fst-italic">N/A</span>
+                  }
+                </td>
+              </tr>
+            </table>
+
+            <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">
+              <i class="bi bi-fuel-pump me-2"></i>Combustible y Aceite
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Tipo Combustible:</th>
+                <td>
+                  @if (vehiculo()!.tipoCombustible) {
+                    {{ formatearTipoCombustible(vehiculo()!.tipoCombustible!) }}
+                  } @else {
+                    <span class="text-muted fst-italic">N/A</span>
+                  }
+                </td>
+              </tr>
+              <tr>
+                <th>Tipo Aceite:</th>
+                <td>{{ vehiculo()!.tipoAceite || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Cambio Aceite cada:</th>
+                <td>
+                  @if (vehiculo()!.intervaloCambioAceiteKm) {
+                    {{ vehiculo()!.intervaloCambioAceiteKm }} km
+                  } @else {
+                    <span class="text-muted fst-italic">N/A</span>
+                  }
+                </td>
               </tr>
             </table>
 
@@ -161,7 +219,115 @@
             <table class="table table-borderless">
               <tr>
                 <th width="40%">Ubicación:</th>
-                <td><strong>{{ vehiculo()!.nombreUbicacion }}</strong></td>
+                <td>
+                  @if (vehiculo()!.ubicacionNodoNombre) {
+                    <strong>{{ getUbicacionNodoDisplay(vehiculo()!) }}</strong>
+                  } @else {
+                    <span class="text-muted fst-italic">No asignada</span>
+                  }
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Llantas y Batería -->
+        <div class="row mt-3">
+          <div class="col-md-6">
+            <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">
+              <i class="bi bi-circle me-2"></i>Llantas
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Marca:</th>
+                <td>{{ vehiculo()!.marcaLlanta || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Medida:</th>
+                <td>{{ vehiculo()!.medidaLlanta || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Tamaño Aro:</th>
+                <td>{{ vehiculo()!.tamanoAro || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Tipo:</th>
+                <td>
+                  @if (vehiculo()!.tipoLlanta) {
+                    {{ formatearTipoLlanta(vehiculo()!.tipoLlanta!) }}
+                  } @else {
+                    <span class="text-muted fst-italic">N/A</span>
+                  }
+                </td>
+              </tr>
+              <tr>
+                <th>Presión:</th>
+                <td>{{ vehiculo()!.presionLlanta || 'N/A' }}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="col-md-6">
+            <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">
+              <i class="bi bi-battery-charging me-2"></i>Batería
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Tipo:</th>
+                <td>{{ vehiculo()!.tipoBateria || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Marca:</th>
+                <td>{{ vehiculo()!.marcaBateria || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Amperaje:</th>
+                <td>{{ vehiculo()!.amperajeBateria || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Número de Placas:</th>
+                <td>{{ vehiculo()!.numeroPlacasBateria ?? 'N/A' }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Documentación y Servicio -->
+        <div class="row mt-3">
+          <div class="col-md-6">
+            <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">
+              <i class="bi bi-file-earmark-text me-2"></i>Documentación Legal
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Vigencia SOAT:</th>
+                <td>{{ formatFecha(vehiculo()!.soatVigencia) }}</td>
+              </tr>
+              <tr>
+                <th>Vigencia Revisión Técnica:</th>
+                <td>{{ formatFecha(vehiculo()!.revisionTecnicaVigencia) }}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="col-md-6">
+            <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">
+              <i class="bi bi-calendar-check me-2"></i>Servicio
+            </h6>
+            <table class="table table-borderless">
+              <tr>
+                <th width="40%">Tiempo de Servicio:</th>
+                <td>
+                  @if (vehiculo()!.tiempoServicioAnios) {
+                    {{ vehiculo()!.tiempoServicioAnios }} años
+                  } @else {
+                    <span class="text-muted fst-italic">N/A</span>
+                  }
+                </td>
+              </tr>
+              <tr>
+                <th>Fecha Incorporación:</th>
+                <td>{{ formatFecha(vehiculo()!.fechaIncorporacion) }}</td>
               </tr>
             </table>
           </div>
@@ -180,7 +346,7 @@
           </div>
         }
 
-        <!-- Información Adicional en Cards -->
+        <!-- Información Adicional -->
         <div class="row mt-3">
           <div class="col-12">
             <hr>
@@ -206,7 +372,8 @@
                 <div class="card border-0 bg-light">
                   <div class="card-body text-center py-2">
                     <small class="text-muted d-block">Estado</small>
-                    <span class="badge" [class]="getEstadoBadgeClass(vehiculo()!.estado)">
+                    <span class="badge"
+                          [class]="getEstadoVehiculoBadgeClass(vehiculo()!.estado)">
                       {{ formatearEstadoVehiculo(vehiculo()!.estado) }}
                     </span>
                   </div>
@@ -216,23 +383,10 @@
                 <div class="card border-0 bg-light">
                   <div class="card-body text-center py-2">
                     <small class="text-muted d-block">Ubicación</small>
-                    <strong>{{ vehiculo()!.nombreUbicacion }}</strong>
+                    <strong>{{ vehiculo()!.ubicacionNodoNombre || 'N/A' }}</strong>
                   </div>
                 </div>
               </div>
-                <div>
-              <!-- Botón para ir a Compartimientos -->
-              <button class="btn btn-outline-info me-2" 
-                      [routerLink]="['/vehiculos', vehiculo()!.id, 'compartimientos']">
-                <i class="bi bi-grid me-1"></i> Compartimientos
-              </button>
-              <button class="btn btn-primary me-2" (click)="editar()">
-                <i class="bi bi-pencil"></i> Editar
-              </button>
-              <button class="btn btn-danger" (click)="eliminar()">
-                <i class="bi bi-trash"></i> Eliminar
-              </button>
-            </div>
             </div>
           </div>
         </div>

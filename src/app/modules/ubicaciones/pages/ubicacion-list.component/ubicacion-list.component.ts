@@ -61,7 +61,8 @@ export class UbicacionListComponent implements OnInit, OnDestroy {
       (u.nombre && u.nombre.toLowerCase().includes(term)) ||
       (u.areaNombre && u.areaNombre.toLowerCase().includes(term)) ||
       (u.padreNombre && u.padreNombre.toLowerCase().includes(term)) ||
-      (u.observacion && u.observacion.toLowerCase().includes(term))
+      (u.observacion && u.observacion.toLowerCase().includes(term)) ||
+      (u.bomberoAsignadoNombre && u.bomberoAsignadoNombre.toLowerCase().includes(term)) 
     );
   });
 

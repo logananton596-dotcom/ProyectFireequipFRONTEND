@@ -68,7 +68,9 @@ export class BomberosList implements OnInit, OnDestroy {
       (bombero.correo && bombero.correo.toLowerCase().includes(term)) ||
       (bombero.limitacionSalud && bombero.limitacionSalud.toLowerCase().includes(term)) ||
       (bombero.tipoLicencia && bombero.tipoLicencia.toLowerCase().includes(term)) ||
-      (bombero.tipoVehiculoLicencia && bombero.tipoVehiculoLicencia.toLowerCase().includes(term))
+      (bombero.tipoVehiculoLicencia && bombero.tipoVehiculoLicencia.toLowerCase().includes(term)) ||
+      (bombero.casilleroNombre && bombero.casilleroNombre.toLowerCase().includes(term))
+
     );
   });
 

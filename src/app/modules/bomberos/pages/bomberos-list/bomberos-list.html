@@ -20,7 +20,7 @@
         </span>
         <input type="text" 
                class="form-control bg-light border-start-0 ps-0" 
-               placeholder="Buscar por código, nombre, apellido, DNI, compañía, tipo de sangre..."
+               placeholder="Buscar por código, nombre, apellido, DNI, compañía, casillero, tipo de sangre..."
                [ngModel]="searchTerm()"
                (input)="onSearchChange($event)">
         
@@ -103,6 +103,7 @@
                   <th style="min-width: 120px;">Teléfono</th>
                   <th style="min-width: 120px;">TeléfonoEmergencia</th>
                   <th style="min-width: 120px;">Correo</th> 
+                  <th style="min-width: 140px;">Casillero</th>
                   <th style="min-width: 80px;">Licencia</th>         
                   <th style="min-width: 100px;">Tipo Licencia</th>    
                   <th style="min-width: 120px;">Vehículo</th>        
@@ -135,6 +136,15 @@
                     <td>{{ bombero.telefono || 'N/A' }}</td>
                     <td>{{ bombero.telefonoEmergencia || 'N/A' }}</td>
                     <td>{{ bombero.correo || 'N/A' }}</td>
+                    <td>
+                      @if (bombero.casilleroNombre) {
+                        <span class="badge bg-light text-dark border" [title]="bombero.casilleroDisplay || ''">
+                          <i class="bi bi-lock me-1"></i>{{ bombero.casilleroNombre }}
+                        </span>
+                      } @else {
+                        <span class="text-muted small fst-italic">Sin casillero</span>
+                      }
+                    </td>
                     <td>
                       <span class="badge" [class.bg-success]="bombero.licencia" [class.bg-secondary]="!bombero.licencia">
                         {{ bombero.licencia ? 'Sí' : 'No' }}

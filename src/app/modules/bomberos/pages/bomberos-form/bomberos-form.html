@@ -175,7 +175,8 @@
           <!-- Fila 6: Estado -->
           <div [attr.inert]="modalAbierto() ? '' : null">
             
-            <form [formGroup]="bomberoForm" (ngSubmit)="onSubmit()">
+            <div>
+
               
               <!-- Fila 6: Estado -->
               <div class="col-md-6">
@@ -198,7 +199,7 @@
 
               <!-- El resto de tus campos y botones del formulario van aquí... -->
               
-            </form>
+            </div>
           </div> <!-- AQUÍ CIERRA EL BLOQUE ENVELOPE INERT -->
 
           <!-- NUEVA FILA: Limitación de Salud -->
@@ -303,7 +304,25 @@
           </select>
         </div>
         </div>
+        <!-- NUEVA FILA: Casillero -->
+        <div class="col-md-12">
+          <hr class="my-3">
+          <h6 class="text-muted mb-3"><i class="bi bi-lock me-2"></i>Casillero Asignado</h6>
+        </div>
 
+        <div class="col-md-6">
+          <label class="form-label">Casillero</label>
+          <app-select-ubicacion
+            formControlName="casilleroId"
+            [soloTipo]="'CASILLERO'"
+            [requerido]="false"
+            [mostrarInactivas]="false"
+            placeholder="Sin casillero asignado">
+          </app-select-ubicacion>
+          <div class="form-text small">
+            Opcional. Solo se muestran ubicaciones de tipo Casillero.
+          </div>
+        </div>
         <!-- Botones -->
         <div class="mt-4 d-flex gap-2 justify-content-end border-top pt-3">
           <button type="button" class="btn btn-light border" (click)="cancelar()">

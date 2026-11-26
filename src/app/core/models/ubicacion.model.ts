@@ -44,6 +44,8 @@ export interface Ubicacion {
   createdAt?: string;
   updatedAt?: string;
   hijos?: Ubicacion[];
+  bomberoAsignadoId?: number | null;
+  bomberoAsignadoNombre?: string;
 }
 
 // ==================== HELPERS ====================
